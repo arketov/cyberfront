@@ -1,5 +1,7 @@
 // lib/core/ui/infinite_ticker.dart
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 @immutable
 class TickerItem {
@@ -10,12 +12,7 @@ class TickerItem {
       });
 
   final String text;
-
-  /// Стиль БЕЗ fontSize (он задаётся у виджета).
-  /// Можно задавать weight/letterSpacing/семейство и т.д.
   final TextStyle style;
-
-  /// true -> красим в accentColor (если в style.color не задано)
   final bool accent;
 }
 
@@ -23,26 +20,29 @@ class InfiniteTickerBar extends StatefulWidget {
   const InfiniteTickerBar({
     super.key,
     required this.items,
+
     this.fontSize = 14,
     this.height = 44,
     this.pixelsPerSecond = 60,
     this.padding = const EdgeInsets.symmetric(horizontal: 16),
 
-    // Цвета
+    // colors
     this.normalColor = const Color(0xB3FFFFFF),
     this.accentColor = const Color(0xFFFF2BD6),
     this.separatorColor = const Color(0x73FFFFFF),
 
-    // Разделитель
     this.separator,
     this.separatorGap = 18,
 
-    // Границы (серые линии)
-    this.borderColor = const Color(0x24FFFFFF),
-    this.borderWidth = 1,
+    // borders
+    this.borderColor = const Color(0xC3B5B5B5),
+    this.borderWidth = 2,
 
-    // Направление
     this.reverse = false,
+
+    // NEW:
+    this.time,          // seconds
+    this.clip = true,   // внутренний ClipRect
   });
 
   final List<TickerItem> items;
@@ -56,7 +56,6 @@ class InfiniteTickerBar extends StatefulWidget {
   final Color accentColor;
   final Color separatorColor;
 
-  /// Если не задан — будет "плюс в кружке"
   final Widget? separator;
   final double separatorGap;
 
@@ -65,13 +64,20 @@ class InfiniteTickerBar extends StatefulWidget {
 
   final bool reverse;
 
+  // NEW
+  final ValueListenable<double>? time;
+  final bool clip;
+
   @override
   State<InfiniteTickerBar> createState() => _InfiniteTickerBarState();
 }
 
 class _InfiniteTickerBarState extends State<InfiniteTickerBar>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _ctrl;
+  Ticker? _ticker;
+
+  final ValueNotifier<double> _internalTime = ValueNotifier<double>(0);
+  late ValueListenable<double> _time;
 
   final GlobalKey _seqKey = GlobalKey();
 
@@ -82,13 +88,36 @@ class _InfiniteTickerBarState extends State<InfiniteTickerBar>
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(vsync: this);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _measureAndStart());
+
+    _time = widget.time ?? _internalTime;
+
+    if (widget.time == null) {
+      _ticker = createTicker((elapsed) {
+        _internalTime.value = elapsed.inMicroseconds / 1e6;
+      })..start();
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => _measureAndUpdate());
   }
 
   @override
   void didUpdateWidget(covariant InfiniteTickerBar oldWidget) {
     super.didUpdateWidget(oldWidget);
+
+    // если переключили источник времени (обычно не нужно, но на hot-reload полезно)
+    if (oldWidget.time != widget.time) {
+      _ticker?.dispose();
+      _ticker = null;
+      _internalTime.value = 0;
+      _time = widget.time ?? _internalTime;
+
+      if (widget.time == null) {
+        _ticker = createTicker((elapsed) {
+          _internalTime.value = elapsed.inMicroseconds / 1e6;
+        })..start();
+      }
+    }
+
     if (oldWidget.items != widget.items ||
         oldWidget.fontSize != widget.fontSize ||
         oldWidget.separatorGap != widget.separatorGap ||
@@ -100,24 +129,24 @@ class _InfiniteTickerBarState extends State<InfiniteTickerBar>
         oldWidget.borderColor != widget.borderColor ||
         oldWidget.borderWidth != widget.borderWidth ||
         oldWidget.separator.runtimeType != widget.separator.runtimeType) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _measureAndStart());
+      WidgetsBinding.instance.addPostFrameCallback((_) => _measureAndUpdate());
     }
   }
 
   @override
   void dispose() {
-    _ctrl.dispose();
+    _ticker?.dispose();
+    _internalTime.dispose();
     super.dispose();
   }
 
-  void _measureAndStart() {
+  void _measureAndUpdate() {
     if (!mounted) return;
 
     final rb = _seqKey.currentContext?.findRenderObject() as RenderBox?;
     final w = rb?.size.width ?? 0;
 
     if (w <= 0 || widget.items.isEmpty) {
-      _ctrl.stop();
       setState(() {
         _seqWidth = 0;
         _repeat = 1;
@@ -126,34 +155,12 @@ class _InfiniteTickerBarState extends State<InfiniteTickerBar>
     }
 
     final viewport = _viewportWidth <= 0 ? 1.0 : _viewportWidth;
-    final repeat = (viewport / w).ceil() + 2;
-
-    final durationMs =
-    ((w / widget.pixelsPerSecond) * 1000).round().clamp(1, 1 << 31);
+    final repeat = (viewport / w).ceil() + 3;
 
     setState(() {
       _seqWidth = w;
       _repeat = repeat;
     });
-
-    _ctrl
-      ..stop()
-      ..duration = Duration(milliseconds: durationMs)
-      ..repeat();
-  }
-
-  Widget _defaultSeparator() {
-    return Icon(Icons.add_circle_outline, size: 16, color: widget.separatorColor);
-  }
-
-  Widget _buildSeparator() {
-    final sep = widget.separator ?? _defaultSeparator();
-
-    // Перекрашиваем separatorColor даже если передали Icon без цвета
-    return IconTheme(
-      data: IconThemeData(color: widget.separatorColor, size: 16),
-      child: sep,
-    );
   }
 
   Color _resolveItemColor(TickerItem item) {
@@ -161,8 +168,21 @@ class _InfiniteTickerBarState extends State<InfiniteTickerBar>
     return item.accent ? widget.accentColor : widget.normalColor;
   }
 
+  Widget _defaultSeparator() => Icon(
+    Icons.add_circle_outline,
+    size: 16,
+    color: widget.separatorColor,
+  );
+
+  Widget _buildSeparator() {
+    final sep = widget.separator ?? _defaultSeparator();
+    return IconTheme(
+      data: IconThemeData(color: widget.separatorColor, size: 16),
+      child: sep,
+    );
+  }
+
   Widget _sequence({Key? key}) {
-    // Делаем "ровно": фиксируем метрики строки
     final strut = StrutStyle(
       fontSize: widget.fontSize,
       height: 1.0,
@@ -170,9 +190,7 @@ class _InfiniteTickerBarState extends State<InfiniteTickerBar>
     );
 
     final children = <Widget>[];
-    for (int i = 0; i < widget.items.length; i++) {
-      final it = widget.items[i];
-
+    for (final it in widget.items) {
       children.add(
         Text(
           it.text,
@@ -187,7 +205,6 @@ class _InfiniteTickerBarState extends State<InfiniteTickerBar>
         ),
       );
 
-      // ✅ Разделитель после КАЖДОГО элемента, включая последний (чтобы на стыке тоже был)
       children.add(SizedBox(width: widget.separatorGap));
       children.add(_buildSeparator());
       children.add(SizedBox(width: widget.separatorGap));
@@ -208,53 +225,62 @@ class _InfiniteTickerBarState extends State<InfiniteTickerBar>
         final vw = c.maxWidth;
         if (vw != _viewportWidth) {
           _viewportWidth = vw;
-          WidgetsBinding.instance.addPostFrameCallback((_) => _measureAndStart());
+          WidgetsBinding.instance.addPostFrameCallback((_) => _measureAndUpdate());
         }
 
         if (widget.items.isEmpty) {
           return SizedBox(height: widget.height);
         }
 
-        // Первый sequence рисуем с key, чтобы измерить реальную ширину
-        final first = _sequence(key: _seqKey);
+        final strip = RepaintBoundary(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _sequence(key: _seqKey),
+              for (int i = 0; i < _repeat - 1; i++) _sequence(),
+            ],
+          ),
+        );
+
+        final animated = AnimatedBuilder(
+          animation: _time,
+          child: Padding(
+            padding: widget.padding,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const NeverScrollableScrollPhysics(),
+              clipBehavior: Clip.none,
+              child: strip,
+            ),
+          ),
+          builder: (context, child) {
+            final base = (_seqWidth <= 0) ? 1.0 : _seqWidth;
+
+            final travel = (_time.value * widget.pixelsPerSecond) % base;
+            final rawDx = widget.reverse ? -(base - travel) : -travel;
+
+            final dpr = MediaQuery.of(context).devicePixelRatio;
+            final dx = (rawDx * dpr).roundToDouble() / dpr;
+
+            return Transform.translate(
+              offset: Offset(dx, 0),
+              child: child,
+            );
+          },
+        );
+
+        final content = widget.clip ? ClipRect(child: animated) : animated;
 
         return Container(
           height: widget.height,
           decoration: BoxDecoration(
+            color: Colors.black,
             border: Border(
               top: BorderSide(color: widget.borderColor, width: widget.borderWidth),
               bottom: BorderSide(color: widget.borderColor, width: widget.borderWidth),
             ),
           ),
-          child: ClipRect(
-            child: AnimatedBuilder(
-              animation: _ctrl,
-              builder: (context, _) {
-                final base = _seqWidth <= 0 ? 1.0 : _seqWidth;
-                final t = _ctrl.value * base;
-                final dx = widget.reverse ? t : -t;
-
-                return Transform.translate(
-                  offset: Offset(dx, 0),
-                  child: UnconstrainedBox(
-                    alignment: Alignment.centerLeft,
-                    constrainedAxis: Axis.vertical, // высоту оставляем под контролем контейнера
-                    child: Padding(
-                      padding: widget.padding,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          first,
-                          for (int i = 0; i < _repeat - 1; i++) _sequence(),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
+          child: content,
         );
       },
     );

@@ -25,12 +25,17 @@ class _AppState extends State<App> {
       final supported = await FlutterDisplayMode.supported;
       final active = await FlutterDisplayMode.active;
 
-      final sameResolution = supported
-          .where((m) => m.width == active.width && m.height == active.height)
-          .toList()
-        ..sort((a, b) => b.refreshRate.compareTo(a.refreshRate));
+      final sameResolution =
+          supported
+              .where(
+                (m) => m.width == active.width && m.height == active.height,
+              )
+              .toList()
+            ..sort((a, b) => b.refreshRate.compareTo(a.refreshRate));
 
-      final mostOptimal = sameResolution.isNotEmpty ? sameResolution.first : active;
+      final mostOptimal = sameResolution.isNotEmpty
+          ? sameResolution.first
+          : active;
       await FlutterDisplayMode.setPreferredMode(mostOptimal);
     } catch (e) {
       debugPrint('[DisplayMode] Failed: $e');
