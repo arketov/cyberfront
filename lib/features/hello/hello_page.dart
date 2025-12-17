@@ -1,30 +1,15 @@
-// lib/features/hello/hello_page.dart
-
-import 'package:cyberdriver/core/theme/app_theme.dart';
-import 'package:cyberdriver/core/ui/infinite_ticker.dart';
-import 'package:cyberdriver/core/ui/stretch_ticker_header.dart';
+import 'dart:math';
 import 'package:flutter/material.dart';
-import '../../core/navigation/app_section.dart';
-import '../../core/ui/base_page.dart';
 
+import 'package:cyberdriver/core/navigation/app_section.dart';
+import 'package:cyberdriver/core/ui/base_page.dart';
+import 'package:cyberdriver/core/ui/infinite_ticker.dart';
 
-class AlwaysBouncyScrollBehavior extends MaterialScrollBehavior {
-  const AlwaysBouncyScrollBehavior();
+import 'cards/hello_hero_card.dart';
+import 'cards/hello_grid_section.dart';
+import 'cards/hello_stats_card.dart';
 
-  @override
-  ScrollPhysics getScrollPhysics(BuildContext context) {
-    return const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics());
-  }
-
-  @override
-  Widget buildOverscrollIndicator(
-      BuildContext context,
-      Widget child,
-      ScrollableDetails details,
-      ) {
-    return child; // без glow
-  }
-}
+TickerItem choice(Random r, List<TickerItem> items) => items[r.nextInt(items.length)];
 
 class HelloPage extends BasePage {
   const HelloPage({super.key});
@@ -33,46 +18,34 @@ class HelloPage extends BasePage {
   AppSection get section => AppSection.hello;
 
   @override
-  Widget buildBody(BuildContext context) {
-    final p = Theme.of(context).extension<AppPalette>()!;
-    final items = const <TickerItem>[
-      TickerItem('МУЖИКИ'),
-      TickerItem('КИБЕРВОДИЛЫ', accent: true),
-      TickerItem('ГОНКИ'),
-      TickerItem('ДРОЧ', accent: true),
+  List<TickerItem> buildTickerItems(BuildContext context) {
+    final r = Random();
+    return <TickerItem>[
+      TickerItem('Просто текст'),
+      TickerItem('Просто текст'),
+      choice(r, const [
+        TickerItem('КИБЕР ДЕНИС'),
+        TickerItem('МУЖИКИ'),
+        TickerItem('СТОЯЧИЕ НОСКИ'),
+      ]),
+      const TickerItem('КИБЕРВОДИЛЫ', accent: true),
+      choice(r, const [
+        TickerItem('ГОНКИ'),
+        TickerItem('ТРАССЫ'),
+        TickerItem('АДРЕНАЛАЙН'),
+      ]),
+      TickerItem('Просто текст'),
+      TickerItem('Просто текст'),
     ];
-    return CustomScrollView(
-      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-      slivers: [
-        SliverAppBar(
-          primary: false,                 // если у тебя сверху уже есть свой AppBar
-          automaticallyImplyLeading: false,
-          pinned: false,
-          stretch: true,
+  }
 
-          expandedHeight: 44,
-          collapsedHeight: 44,
-          toolbarHeight: 44,
-
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          surfaceTintColor: Colors.transparent,
-
-          flexibleSpace: StretchTickerHeader(
-            items: items,
-            baseHeight: 44,
-            maxStretch: 140,
-            maxAngleDeg: 28,
-          ),
-        ),
-        // дальше обычный контент
-        SliverList(
-          delegate: SliverChildBuilderDelegate(
-                (context, i) => ListTile(title: Text('Item $i')),
-            childCount: 50,
-          ),
-        ),
-      ],
-    );
+  @override
+  List<Widget> buildBlocks(BuildContext context) {
+    return const [
+      HelloHeroCard(),
+      HelloGridSection(),
+      HelloStatsCard(),
+    ];
   }
 }
+

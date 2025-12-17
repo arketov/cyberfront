@@ -2,6 +2,7 @@
 class Assets {
   Assets._();
 
+  static const String cardsHelloAbout = 'assets/images/cards/hello_about.jpg';
   static const String fontsTtTravelsNextBlack = 'assets/fonts/tt-travels-next-black.ttf';
   static const String fontsTtTravelsNextBlackOutline = 'assets/fonts/tt-travels-next-black-outline.ttf';
 

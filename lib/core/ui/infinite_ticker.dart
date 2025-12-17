@@ -1,8 +1,45 @@
 // lib/core/ui/infinite_ticker.dart
+import 'dart:ui' show ImageFilter;
+import 'package:cyberdriver/core/theme/app_theme.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 
+
+enum _TickerSlot { left, center, right }
+
+class _CenterAnchoredDelegate extends MultiChildLayoutDelegate {
+  @override
+  void performLayout(Size size) {
+    final c = layoutChild(
+      _TickerSlot.center,
+      BoxConstraints(maxWidth: double.infinity, maxHeight: size.height),
+    );
+
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+
+    positionChild(_TickerSlot.center, Offset(cx - c.width / 2, cy - c.height / 2));
+
+    if (hasChild(_TickerSlot.left)) {
+      final l = layoutChild(
+        _TickerSlot.left,
+        BoxConstraints(maxWidth: double.infinity, maxHeight: size.height),
+      );
+      positionChild(_TickerSlot.left, Offset(cx - c.width / 2 - l.width, cy - l.height / 2));
+    }
+
+    if (hasChild(_TickerSlot.right)) {
+      final r = layoutChild(
+        _TickerSlot.right,
+        BoxConstraints(maxWidth: double.infinity, maxHeight: size.height),
+      );
+      positionChild(_TickerSlot.right, Offset(cx + c.width / 2, cy - r.height / 2));
+    }
+  }
+
+  @override
+  bool shouldRelayout(covariant MultiChildLayoutDelegate oldDelegate) => false;
+}
 @immutable
 class TickerItem {
   const TickerItem(
@@ -16,14 +53,15 @@ class TickerItem {
   final bool accent;
 }
 
-class InfiniteTickerBar extends StatefulWidget {
+/// Полностью статическая полоса: НИКАКОЙ анимации/движения.
+class InfiniteTickerBar extends StatelessWidget {
   const InfiniteTickerBar({
     super.key,
     required this.items,
 
+    // layout
     this.fontSize = 14,
     this.height = 44,
-    this.pixelsPerSecond = 60,
     this.padding = const EdgeInsets.symmetric(horizontal: 16),
 
     // colors
@@ -34,22 +72,21 @@ class InfiniteTickerBar extends StatefulWidget {
     this.separator,
     this.separatorGap = 18,
 
-    // borders
-    this.borderColor = const Color(0xC3B5B5B5),
-    this.borderWidth = 2,
+    // glass/frame
+    this.borderRadius = 18,
+    this.borderColor = const Color(0x24FFFFFF),
+    this.borderWidth = 1,
 
-    this.reverse = false,
+    // fade edges
+    this.fadeWidth = 5,
 
-    // NEW:
-    this.time,          // seconds
-    this.clip = true,   // внутренний ClipRect
+    this.clip = true,
   });
 
   final List<TickerItem> items;
 
   final double fontSize;
   final double height;
-  final double pixelsPerSecond;
   final EdgeInsets padding;
 
   final Color normalColor;
@@ -59,230 +96,156 @@ class InfiniteTickerBar extends StatefulWidget {
   final Widget? separator;
   final double separatorGap;
 
+  final double borderRadius;
   final Color borderColor;
   final double borderWidth;
 
-  final bool reverse;
+  final double fadeWidth;
 
-  // NEW
-  final ValueListenable<double>? time;
   final bool clip;
-
-  @override
-  State<InfiniteTickerBar> createState() => _InfiniteTickerBarState();
-}
-
-class _InfiniteTickerBarState extends State<InfiniteTickerBar>
-    with SingleTickerProviderStateMixin {
-  Ticker? _ticker;
-
-  final ValueNotifier<double> _internalTime = ValueNotifier<double>(0);
-  late ValueListenable<double> _time;
-
-  final GlobalKey _seqKey = GlobalKey();
-
-  double _seqWidth = 0;
-  double _viewportWidth = 0;
-  int _repeat = 2;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _time = widget.time ?? _internalTime;
-
-    if (widget.time == null) {
-      _ticker = createTicker((elapsed) {
-        _internalTime.value = elapsed.inMicroseconds / 1e6;
-      })..start();
-    }
-
-    WidgetsBinding.instance.addPostFrameCallback((_) => _measureAndUpdate());
-  }
-
-  @override
-  void didUpdateWidget(covariant InfiniteTickerBar oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    // если переключили источник времени (обычно не нужно, но на hot-reload полезно)
-    if (oldWidget.time != widget.time) {
-      _ticker?.dispose();
-      _ticker = null;
-      _internalTime.value = 0;
-      _time = widget.time ?? _internalTime;
-
-      if (widget.time == null) {
-        _ticker = createTicker((elapsed) {
-          _internalTime.value = elapsed.inMicroseconds / 1e6;
-        })..start();
-      }
-    }
-
-    if (oldWidget.items != widget.items ||
-        oldWidget.fontSize != widget.fontSize ||
-        oldWidget.separatorGap != widget.separatorGap ||
-        oldWidget.pixelsPerSecond != widget.pixelsPerSecond ||
-        oldWidget.reverse != widget.reverse ||
-        oldWidget.normalColor != widget.normalColor ||
-        oldWidget.accentColor != widget.accentColor ||
-        oldWidget.separatorColor != widget.separatorColor ||
-        oldWidget.borderColor != widget.borderColor ||
-        oldWidget.borderWidth != widget.borderWidth ||
-        oldWidget.separator.runtimeType != widget.separator.runtimeType) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _measureAndUpdate());
-    }
-  }
-
-  @override
-  void dispose() {
-    _ticker?.dispose();
-    _internalTime.dispose();
-    super.dispose();
-  }
-
-  void _measureAndUpdate() {
-    if (!mounted) return;
-
-    final rb = _seqKey.currentContext?.findRenderObject() as RenderBox?;
-    final w = rb?.size.width ?? 0;
-
-    if (w <= 0 || widget.items.isEmpty) {
-      setState(() {
-        _seqWidth = 0;
-        _repeat = 1;
-      });
-      return;
-    }
-
-    final viewport = _viewportWidth <= 0 ? 1.0 : _viewportWidth;
-    final repeat = (viewport / w).ceil() + 3;
-
-    setState(() {
-      _seqWidth = w;
-      _repeat = repeat;
-    });
-  }
 
   Color _resolveItemColor(TickerItem item) {
     if (item.style.color != null) return item.style.color!;
-    return item.accent ? widget.accentColor : widget.normalColor;
+    return item.accent ? accentColor : normalColor;
   }
 
-  Widget _defaultSeparator() => Icon(
-    Icons.add_circle_outline,
-    size: 16,
-    color: widget.separatorColor,
-  );
+  Widget _defaultSeparator() =>
+      Icon(Icons.add_circle_outline, size: 16, color: separatorColor);
 
   Widget _buildSeparator() {
-    final sep = widget.separator ?? _defaultSeparator();
+    final sep = separator ?? _defaultSeparator();
     return IconTheme(
-      data: IconThemeData(color: widget.separatorColor, size: 16),
+      data: IconThemeData(color: separatorColor, size: 16),
       child: sep,
     );
   }
 
-  Widget _sequence({Key? key}) {
-    final strut = StrutStyle(
-      fontSize: widget.fontSize,
-      height: 1.0,
-      forceStrutHeight: true,
-    );
+  Widget _edgeFade(Widget child) {
+    if (fadeWidth <= 0) return child;
 
-    final children = <Widget>[];
-    for (final it in widget.items) {
-      children.add(
-        Text(
-          it.text,
-          maxLines: 1,
-          softWrap: false,
-          overflow: TextOverflow.visible,
-          strutStyle: strut,
-          style: it.style.copyWith(
-            fontSize: widget.fontSize,
-            color: _resolveItemColor(it),
-          ),
-        ),
-      );
+    return LayoutBuilder(
+      builder: (context, c) {
+        final w = c.maxWidth;
+        if (w <= 0) return child;
 
-      children.add(SizedBox(width: widget.separatorGap));
-      children.add(_buildSeparator());
-      children.add(SizedBox(width: widget.separatorGap));
-    }
+        final fw = fadeWidth.clamp(0.0, w / 2);
+        final a = (fw / w).clamp(0.1, 0.5);
 
-    return Row(
-      key: key,
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: children,
+        return ShaderMask(
+          blendMode: BlendMode.dstIn,
+          shaderCallback: (rect) {
+            return LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: const [
+                Colors.transparent,
+                Colors.black,
+                Colors.black,
+                Colors.transparent,
+              ],
+              stops: [0.0, a, 1.0 - a, 1.0],
+            ).createShader(rect);
+          },
+          child: child,
+        );
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, c) {
-        final vw = c.maxWidth;
-        if (vw != _viewportWidth) {
-          _viewportWidth = vw;
-          WidgetsBinding.instance.addPostFrameCallback((_) => _measureAndUpdate());
-        }
 
-        if (widget.items.isEmpty) {
-          return SizedBox(height: widget.height);
-        }
+    if (items.isEmpty) return SizedBox(height: height);
+    final strut = StrutStyle( fontSize: fontSize, height: 1.0, forceStrutHeight: true, );
+    final iconSize = 16.0;
+    final sepSlotW = separatorGap * 2 + iconSize;
 
-        final strip = RepaintBoundary(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _sequence(key: _seqKey),
-              for (int i = 0; i < _repeat - 1; i++) _sequence(),
-            ],
-          ),
-        );
+    final mid = items.length ~/ 2;
+    final leftItems = items.sublist(0, mid);
+    final centerItem = items[mid];
+    final rightItems = items.sublist(mid + 1);
 
-        final animated = AnimatedBuilder(
-          animation: _time,
-          child: Padding(
-            padding: widget.padding,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              physics: const NeverScrollableScrollPhysics(),
-              clipBehavior: Clip.none,
-              child: strip,
+    Widget buildText(TickerItem it) => Text(
+      it.text,
+      maxLines: 1,
+      softWrap: false,
+      overflow: TextOverflow.visible,
+      strutStyle: strut,
+      textAlign: TextAlign.center,
+      style: it.style.copyWith(
+        fontSize: fontSize,
+        color: _resolveItemColor(it),
+      ),
+    );
+
+    Widget sepSlot() => SizedBox(
+      width: sepSlotW,
+      child: Center(child: _buildSeparator()),
+    );
+
+    Widget sideRow(List<TickerItem> list, {required bool leadingSep, required bool trailingSep}) {
+      final w = <Widget>[];
+      if (leadingSep) w.add(sepSlot());
+
+      for (var i = 0; i < list.length; i++) {
+        w.add(buildText(list[i]));
+        final isLast = i == list.length - 1;
+        if (!isLast || trailingSep) w.add(sepSlot());
+      }
+
+      return Row(mainAxisSize: MainAxisSize.min, children: w);
+    }
+
+    final body = Padding(
+      padding: padding,
+      child: SizedBox.expand(
+        child: CustomMultiChildLayout(
+          delegate: _CenterAnchoredDelegate(),
+          children: [
+            if (leftItems.isNotEmpty)
+              LayoutId(
+                id: _TickerSlot.left,
+                // слева добавляем separator ПОСЛЕ каждого, включая последний (между left и center)
+                child: sideRow(leftItems, leadingSep: false, trailingSep: true),
+              ),
+
+            LayoutId(
+              id: _TickerSlot.center,
+              child: buildText(centerItem),
             ),
-          ),
-          builder: (context, child) {
-            final base = (_seqWidth <= 0) ? 1.0 : _seqWidth;
 
-            final travel = (_time.value * widget.pixelsPerSecond) % base;
-            final rawDx = widget.reverse ? -(base - travel) : -travel;
+            if (rightItems.isNotEmpty)
+              LayoutId(
+                id: _TickerSlot.right,
+                // справа начинаем с separator (между center и первым right)
+                child: sideRow(rightItems, leadingSep: true, trailingSep: false),
+              ),
+          ],
+        ),
+      ),
+    );
 
-            final dpr = MediaQuery.of(context).devicePixelRatio;
-            final dx = (rawDx * dpr).roundToDouble() / dpr;
+    final content = clip ? ClipRect(child: body) : body;
+    final faded = _edgeFade(content);
 
-            return Transform.translate(
-              offset: Offset(dx, 0),
-              child: child,
-            );
-          },
-        );
-
-        final content = widget.clip ? ClipRect(child: animated) : animated;
-
-        return Container(
-          height: widget.height,
-          decoration: BoxDecoration(
-            color: Colors.black,
-            border: Border(
-              top: BorderSide(color: widget.borderColor, width: widget.borderWidth),
-              bottom: BorderSide(color: widget.borderColor, width: widget.borderWidth),
+    final radius = BorderRadius.circular(borderRadius);
+    final palette = Theme.of(context).extension<AppPalette>()!;
+    return RepaintBoundary(
+      child: ClipRRect(
+        borderRadius: radius,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: palette.blurSigma, sigmaY: palette.blurSigma),
+          child: Container(
+            height: height,
+            decoration: BoxDecoration(
+              color: palette.blurBlack,
+              borderRadius: radius,
+              border: Border.all(color: borderColor, width: borderWidth),
             ),
+            child: Center(child: faded),
           ),
-          child: content,
-        );
-      },
+        ),
+      ),
     );
   }
 }

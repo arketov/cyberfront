@@ -13,6 +13,8 @@ class AppPalette extends ThemeExtension<AppPalette> {
     required this.line,
     required this.muted,
     required this.muted2,
+    required this.blurBlack,
+    required this.blurSigma
   });
 
   final Color bg;
@@ -25,6 +27,8 @@ class AppPalette extends ThemeExtension<AppPalette> {
 
   final Color muted;
   final Color muted2;
+  final Color blurBlack;
+  final double blurSigma;
 
   @override
   AppPalette copyWith({
@@ -36,6 +40,8 @@ class AppPalette extends ThemeExtension<AppPalette> {
     Color? line,
     Color? muted,
     Color? muted2,
+    Color? blurBlack,
+    double? blurSigma,
   }) {
     return AppPalette(
       bg: bg ?? this.bg,
@@ -46,6 +52,8 @@ class AppPalette extends ThemeExtension<AppPalette> {
       line: line ?? this.line,
       muted: muted ?? this.muted,
       muted2: muted2 ?? this.muted2,
+      blurBlack: blurBlack ?? this.blurBlack,
+      blurSigma: blurSigma ?? this.blurSigma
     );
   }
 
@@ -61,6 +69,8 @@ class AppPalette extends ThemeExtension<AppPalette> {
       line: Color.lerp(line, other.line, t)!,
       muted: Color.lerp(muted, other.muted, t)!,
       muted2: Color.lerp(muted2, other.muted2, t)!,
+        blurBlack: Color.lerp(blurBlack, other.blurBlack,t)!,
+        blurSigma: other.blurSigma
     );
   }
 }
@@ -80,6 +90,10 @@ class AppTheme {
   static const _text = Color(0xFFFFFFFF);
   static const _muted = Color(0xB3FFFFFF); // ~70%
   static const _muted2 = Color(0x73FFFFFF); // ~45%
+
+  static const _blurBlack = Color(0xBE000000);
+
+  static const _blurSigma = 12.0;
 
   static ThemeData get dark {
     final scheme = ColorScheme.fromSeed(
@@ -106,14 +120,16 @@ class AppTheme {
 
       extensions: const <ThemeExtension<dynamic>>[
         AppPalette(
-          bg: _bg,
-          panel: _panel,
-          panel2: _panel2,
-          pink: _pink,
-          blue: _blue,
-          line: _line,
-          muted: _muted,
-          muted2: _muted2,
+            bg: _bg,
+            panel: _panel,
+            panel2: _panel2,
+            pink: _pink,
+            blue: _blue,
+            line: _line,
+            muted: _muted,
+            muted2: _muted2,
+            blurBlack: _blurBlack,
+            blurSigma: _blurSigma
         ),
       ],
 

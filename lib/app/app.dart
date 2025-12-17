@@ -5,6 +5,7 @@ import 'package:flutter_displaymode/flutter_displaymode.dart';
 
 import '../core/theme/app_theme.dart';
 import 'app_router.dart';
+import 'package:cyberdriver/core/navigation/app_route_observer.dart';
 
 class App extends StatefulWidget {
   const App({super.key});
@@ -17,7 +18,7 @@ class _AppState extends State<App> {
   @override
   void initState() {
     super.initState();
-    _setOptimalDisplayMode(); // один раз при старте
+    _setOptimalDisplayMode();
   }
 
   Future<void> _setOptimalDisplayMode() async {
@@ -26,16 +27,10 @@ class _AppState extends State<App> {
       final active = await FlutterDisplayMode.active;
 
       final sameResolution =
-          supported
-              .where(
-                (m) => m.width == active.width && m.height == active.height,
-              )
-              .toList()
-            ..sort((a, b) => b.refreshRate.compareTo(a.refreshRate));
+      supported.where((m) => m.width == active.width && m.height == active.height).toList()
+        ..sort((a, b) => b.refreshRate.compareTo(a.refreshRate));
 
-      final mostOptimal = sameResolution.isNotEmpty
-          ? sameResolution.first
-          : active;
+      final mostOptimal = sameResolution.isNotEmpty ? sameResolution.first : active;
       await FlutterDisplayMode.setPreferredMode(mostOptimal);
     } catch (e) {
       debugPrint('[DisplayMode] Failed: $e');
@@ -51,6 +46,8 @@ class _AppState extends State<App> {
       themeMode: ThemeMode.dark,
       initialRoute: '/hello',
       onGenerateRoute: AppRouter.onGenerateRoute,
+      navigatorObservers: [appRouteObserver], // <-- важно
+      //showPerformanceOverlay: true,
     );
   }
 }

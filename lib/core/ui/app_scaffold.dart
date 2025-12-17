@@ -1,3 +1,5 @@
+// lib/core/ui/app_scaffold.dart
+
 import 'dart:ui';
 import 'package:cyberdriver/core/ui/logo.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +22,7 @@ class AppScaffold extends StatelessWidget {
   final List<Widget>? actions;
 
   static const double _desktopBreakpoint = 900;
+  static const double _desktopMaxWidth = 1280;
 
   void _go(BuildContext context, AppSection to) {
     if (to == current) return;
@@ -29,34 +32,40 @@ class AppScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = Theme.of(context).extension<AppPalette>()!;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final isDesktop = constraints.maxWidth >= _desktopBreakpoint;
 
         final content = isDesktop
-            ? Row(
-          children: [
-            _Sidebar(
-              current: current,
-              onTap: (s) => _go(context, s),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _DesktopHeader(
-                      title: title ?? current.label,
-                      actions: actions ?? const [],
-                    ),
-                    const SizedBox(height: 12),
-                    Expanded(child: child),
-                  ],
+            ? Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: _desktopMaxWidth),
+            child: Row(
+              children: [
+                _Sidebar(
+                  current: current,
+                  onTap: (s) => _go(context, s),
                 ),
-              ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _DesktopHeader(
+                          title: title ?? current.label,
+                          actions: actions ?? const [],
+                        ),
+                        const SizedBox(height: 12),
+                        Expanded(child: child),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         )
             : _MobileBody(
           nav: _FloatingBottomNav(
@@ -68,13 +77,6 @@ class AppScaffold extends StatelessWidget {
 
         return Scaffold(
           backgroundColor: palette.bg,
-          // ВАЖНО: на desktop appBar не нужен, иначе он "лежит" поверх sidebar.
-          appBar: isDesktop
-              ? null
-              : AppBar(
-            title: Text(title ?? current.label),
-            actions: actions,
-          ),
           body: SafeArea(child: content),
         );
       },
@@ -107,16 +109,15 @@ class _MobileBody extends StatelessWidget {
   final Widget child;
   final Widget nav;
 
-  static const double _navHeight = 66;
   static const double _navBottomInset = 16;
 
   @override
   Widget build(BuildContext context) {
     return Stack(
+      clipBehavior: Clip.none,
       children: [
-        // Контент с нижним отступом, чтобы важное не пряталось под панелью.
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, _navHeight + _navBottomInset + 16),
+          padding: const EdgeInsets.fromLTRB(0, 0, 0, 0), // <= без navHeight
           child: child,
         ),
         Positioned(
@@ -127,7 +128,7 @@ class _MobileBody extends StatelessWidget {
             top: false,
             child: Padding(
               padding: const EdgeInsets.only(bottom: _navBottomInset),
-              child: Center(child: nav),
+              child: Center(child: nav), // если надо во всю ширину — убери Center
             ),
           ),
         ),
@@ -161,13 +162,13 @@ class _FloatingBottomNav extends StatelessWidget {
           width: w.toDouble(),
           height: _height,
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(22),
+            borderRadius: BorderRadius.circular(18),
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+              filter: ImageFilter.blur(sigmaX: palette.blurSigma, sigmaY: palette.blurSigma),
               child: Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xD6000000), // тёмный полупрозрачный
-                  borderRadius: BorderRadius.circular(22),
+                    color: palette.blurBlack,
+                  borderRadius: BorderRadius.circular(18),
                   border: Border.all(color: palette.line, width: 1),
                 ),
                 child: Row(
