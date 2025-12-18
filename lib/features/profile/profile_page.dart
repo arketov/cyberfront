@@ -41,17 +41,6 @@ class ProfilePage extends BasePage {
   List<Widget> buildBlocks(BuildContext context) {
     return [
       const Center(child: Text('ПРОФИЛЬ')),
-      Container(
-        height: 25,
-        width: 300,
-        decoration: BoxDecoration(
-      color: Colors.black
-      ),
-        child: Marquee(
-          text: 'There once was a boy who told this story about a boy: "',
-
-        )
-      )
 
     ];
   }

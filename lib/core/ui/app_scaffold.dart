@@ -49,14 +49,10 @@ class AppScaffold extends StatelessWidget {
                 ),
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                    padding: const EdgeInsets.fromLTRB(0, 0, 16, 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _DesktopHeader(
-                          title: title ?? current.label,
-                          actions: actions ?? const [],
-                        ),
                         const SizedBox(height: 12),
                         Expanded(child: child),
                       ],
@@ -77,27 +73,9 @@ class AppScaffold extends StatelessWidget {
 
         return Scaffold(
           backgroundColor: palette.bg,
-          body: SafeArea(child: content),
+          body: content,
         );
       },
-    );
-  }
-}
-
-class _DesktopHeader extends StatelessWidget {
-  const _DesktopHeader({required this.title, required this.actions});
-
-  final String title;
-  final List<Widget> actions;
-
-  @override
-  Widget build(BuildContext context) {
-    final tt = Theme.of(context).appBarTheme.titleTextStyle;
-    return Row(
-      children: [
-        Expanded(child: Text(title, style: tt)),
-        if (actions.isNotEmpty) ...actions,
-      ],
     );
   }
 }
@@ -113,6 +91,7 @@ class _MobileBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final topInset = MediaQuery.of(context).padding.top;
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -120,6 +99,28 @@ class _MobileBody extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(0, 0, 0, 0), // <= без navHeight
           child: child,
         ),
+        if (topInset > 0)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: topInset + 25,
+            child: IgnorePointer(
+              child: ClipRect(
+                child: ShaderMask(
+                  blendMode: BlendMode.dstIn,
+                  shaderCallback: (rect) => const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xFFFFFFFF),Color(0x90FFFFFF), Color(0x00ffffff),], // маска: сверху видно, снизу нет
+                  ).createShader(rect),
+                  child:  Container(
+                      color: Colors.black, // “тёмный” слой
+                  ),
+                ),
+              ),
+            ),
+          ),
         Positioned(
           left: 0,
           right: 0,
