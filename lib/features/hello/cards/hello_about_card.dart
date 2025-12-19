@@ -75,8 +75,6 @@ class _ExpandableAboutTextState extends State<_ExpandableAboutText> {
         firstChild: Text(
           widget.text,
           style: style,
-          maxLines: widget.collapsedLines,
-          overflow: TextOverflow.ellipsis,
         ),
         secondChild: Text(
           widget.text,

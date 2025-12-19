@@ -22,8 +22,8 @@ class HelloPromoCard extends HelloCardBase {
       children: [
         const HelloKicker('[ЕСТЬ МОМЕНТИКИ]', color: Colors.white70),
         const SizedBox(height: 10),
-        const Text(
-          'МИНИМУМ\nВРЕМЕНИ',
+        const  Text(
+          'МИНИМУМ ВРЕМЕНИ',
           style: TextStyle(
             height: .92,
             fontSize: 26,

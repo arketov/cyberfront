@@ -7,7 +7,6 @@ import 'package:flutter/rendering.dart';
 
 FrameMeter? _meter;
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
 
   assert(() {
     // _meter = FrameMeter(tag: 'APP');

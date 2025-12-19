@@ -17,6 +17,41 @@ class HelloPriceCard extends HelloCardBase {
 
   @override
   Widget buildContent(BuildContext context) {
+    final lineStyle = TextStyle(
+      height: 1.25,
+      fontSize: 13.2,
+      fontWeight: FontWeight.w600,
+      color: Colors.white.withOpacity(.85),
+    );
+
+    Widget line(String left, String right) {
+      return Row(
+        children: [
+          Expanded(
+            child: Text(
+              left,
+              style: lineStyle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                right,
+                style: lineStyle,
+                textAlign: TextAlign.right,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -33,15 +68,10 @@ class HelloPriceCard extends HelloCardBase {
           ),
         ),
         const SizedBox(height: 10),
-        Text(
-          'вдвоем        500 ₽/час x2\nвтроем        400 ₽/час х3\nвчетвером  300 ₽/час х4',
-          style: TextStyle(
-            height: 1.25,
-            fontSize: 13.2,
-            fontWeight: FontWeight.w600,
-            color: Colors.white.withOpacity(.85),
-          ),
-        ),
+
+        line('вдвоём', '500 ₽/час ×2'),
+        line('втроём', '400 ₽/час ×3'),
+        line('вчетвером', '300 ₽/час ×4'),
       ],
     );
   }
