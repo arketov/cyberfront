@@ -3,6 +3,7 @@ part of tracks_page;
 
 class _TrackCard extends CardBase {
   const _TrackCard({required this.item});
+
   final _TrackItem item;
 
   @override
@@ -61,23 +62,31 @@ class _TrackCard extends CardBase {
                         // Guard against overflow on narrow widths by constraining the country pill.
                         const pillSpacing = 8.0;
                         const minCountryWidth = 80.0;
-                        final countryMaxWidth = max(minCountryWidth, c.maxWidth - 96);
+                        final countryMaxWidth = max(
+                          minCountryWidth,
+                          c.maxWidth - 96,
+                        );
 
                         return Wrap(
                           spacing: pillSpacing,
                           runSpacing: 6,
                           children: [
-                            _Pill(text: '${item.lengthKm.toStringAsFixed(1)} км'),
+                            _Pill(
+                              text: '${item.lengthKm.toStringAsFixed(1)} км',
+                            ),
                             ConstrainedBox(
-                              constraints: BoxConstraints(maxWidth: countryMaxWidth),
+                              constraints: BoxConstraints(
+                                maxWidth: countryMaxWidth,
+                              ),
                               child: _Pill(
-                                text: countryNameRu(item.countryCode).toUpperCase(),
+                                text: countryNameRu(
+                                  item.countryCode,
+                                ).toUpperCase(),
                                 ellipsize: true,
                               ),
                             ),
                           ],
                         );
-
                       },
                     ),
                     const SizedBox(height: 6),
@@ -94,6 +103,7 @@ class _TrackCard extends CardBase {
 
 class _MapThumb extends StatefulWidget {
   const _MapThumb({required this.id});
+
   final String id;
 
   @override
@@ -121,7 +131,7 @@ class _MapThumbState extends State<_MapThumb> {
     if (widget.id.trim().isEmpty) {
       return Future.error('empty');
     }
-    return MediaCacheService.instance.getImageFile(id: widget.id);
+    return MediaCacheService.instance.getImageFile(id: widget.id, forceRefresh: false);
   }
 
   @override
@@ -131,36 +141,36 @@ class _MapThumbState extends State<_MapThumb> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: SizedBox.expand(
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            FutureBuilder<File>(
-              future: _future,
-              builder: (context, snap) {
-                if (snap.connectionState == ConnectionState.done && snap.hasData) {
-                  return Image.file(
-                    snap.data!,
-                    fit: BoxFit.cover,
-                    filterQuality: FilterQuality.medium,
-                    errorBuilder: (_, __, ___) => _fallback(cs),
-                  );
-                }
-                return _fallback(cs);
-              },
-            ),
-            DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.black.withOpacity(0.25),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ],
+        child: FutureBuilder<File>(
+          future: _future,
+          builder: (context, snap) {
+            if (snap.connectionState == ConnectionState.done && snap.hasData) {
+              return Stack(
+                fit: StackFit.expand,
+                children: [
+                  // опционально: очень лёгкий фон под превью (если нужно)
+                  // ColoredBox(color: cs.surface.withOpacity(0.04)),
+
+                  Padding(
+                    padding: const EdgeInsets.all(10), // чтобы не упиралось в края клипа
+                    child: ColorFiltered(
+                      colorFilter: ColorFilter.mode(
+                        const Color(0xFFFFFFFF),
+                        BlendMode.srcATop, // лёгкий tint, прозрачность сохраняется
+                      ),
+                      child: Image.file(
+                        snap.data!,
+                        fit: BoxFit.contain, // ВЛЕЗАЕТ ПОЛНОСТЬЮ, без обрезки
+                        alignment: Alignment.center,
+                        filterQuality: FilterQuality.medium,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }
+            return _fallback(cs);
+          },
         ),
       ),
     );
@@ -177,6 +187,7 @@ class _MapThumbState extends State<_MapThumb> {
 
 class _Pill extends StatelessWidget {
   const _Pill({required this.text, this.ellipsize = false});
+
   final String text;
   final bool ellipsize;
 
@@ -203,7 +214,13 @@ class _Pill extends StatelessWidget {
         border: Border.all(color: cs.onSurface.withOpacity(0.12)),
         color: cs.surface.withOpacity(0.18),
       ),
-      child: ellipsize ? t : FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: t),
+      child: ellipsize
+          ? t
+          : FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: t,
+            ),
     );
   }
 }
