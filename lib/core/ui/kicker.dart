@@ -2,8 +2,8 @@
 
 import 'package:flutter/material.dart';
 
-class HelloKicker extends StatelessWidget {
-  const HelloKicker(this.text, {super.key, this.color});
+class Kicker extends StatelessWidget {
+  const Kicker(this.text, {super.key, this.color});
 
   final String text;
   final Color? color;

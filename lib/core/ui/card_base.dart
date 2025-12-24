@@ -1,13 +1,13 @@
-// lib/features/hello/cards/hello_card_base.dart
+// lib/features/hello/cards/card_base.dart
 import 'dart:math' as math;
 import 'package:cyberdriver/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
-abstract class HelloCardBase extends StatelessWidget {
-  const HelloCardBase({super.key});
+abstract class CardBase extends StatelessWidget {
+  const CardBase({super.key});
 
   /// Внутренние отступы контента.
-  EdgeInsetsGeometry get padding => const EdgeInsets.fromLTRB(18, 14, 18, 16);
+  EdgeInsetsGeometry get padding => const EdgeInsets.fromLTRB(16, 14, 18, 16);
 
   /// Радиус всех карт.
   BorderRadius get radius => BorderRadius.circular(20);
@@ -16,6 +16,9 @@ abstract class HelloCardBase extends StatelessWidget {
   Color? backgroundColor(BuildContext context) => Colors.black;
   /// Ширина обводки.
   double get borderWidth => 1;
+
+  /// Явная граница (если нужно переопределить отрисовку бордера).
+  BoxBorder? border(BuildContext context) => null;
 
   /// Весьма аккуратно: карточка кликабельна только если onTap != null.
   VoidCallback? onTap(BuildContext context) => null;
@@ -104,12 +107,14 @@ abstract class HelloCardBase extends StatelessWidget {
     final g = borderGradient(context);
     final tap = onTap(context);
     final bgGrad = backgroundGradient(context);
+    final customBorder = border(context);
 
 
     Widget core = DecoratedBox(
       // “рамка” — тут живёт градиент обводки
       decoration: BoxDecoration(
         borderRadius: rOuter,
+        border: customBorder,
         gradient: g,
         color: g == null ? borderColor(context) : null,
       ),

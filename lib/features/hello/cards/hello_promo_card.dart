@@ -1,9 +1,10 @@
 //lib/features/hello/cards/hello_promo_card.dart
+import 'package:cyberdriver/core/ui/kicker.dart';
 import 'package:flutter/material.dart';
-import 'hello_card_base.dart';
-import 'hello_kicker.dart';
+import '../../../core/ui/card_base.dart';
 
-class HelloPromoCard extends HelloCardBase {
+
+class HelloPromoCard extends CardBase {
   const HelloPromoCard({super.key});
 
   @override
@@ -20,7 +21,7 @@ class HelloPromoCard extends HelloCardBase {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const HelloKicker('[ЕСТЬ МОМЕНТИКИ]', color: Colors.white70),
+        const Kicker('[ЕСТЬ МОМЕНТИКИ]', color: Colors.white70),
         const SizedBox(height: 10),
         const  Text(
           'МИНИМУМ ВРЕМЕНИ',

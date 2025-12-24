@@ -2,16 +2,16 @@
 import 'dart:math' as math;
 
 import 'package:cyberdriver/core/ui/cyber_dots_loader.dart';
+import 'package:cyberdriver/core/ui/kicker.dart';
 import 'package:flutter/material.dart';
-import 'hello_card_base.dart';
-import 'hello_kicker.dart';
+import '../../../core/ui/card_base.dart';
 
 import 'package:cyberdriver/core/config/app_config.dart';
 import 'package:cyberdriver/core/network/network.dart';
 import 'package:cyberdriver/features/records/data/records_api.dart';
 import 'package:cyberdriver/shared/models/record_group_dto.dart';
 
-class HelloTopRecordsCard extends HelloCardBase {
+class HelloTopRecordsCard extends CardBase {
   const HelloTopRecordsCard({super.key});
 
   @override
@@ -21,7 +21,7 @@ class HelloTopRecordsCard extends HelloCardBase {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        HelloKicker('[ТОП РЕКОРДЫ]', color: cs.onSurface.withOpacity(.55)),
+        Kicker('[ТОП РЕКОРДЫ]', color: cs.onSurface.withOpacity(.55)),
         const SizedBox(height: 10),
         Text(
           'ГРУППОВЫЕ РЕКОРДЫ',

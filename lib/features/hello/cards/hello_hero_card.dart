@@ -1,11 +1,12 @@
 // lib/features/hello/cards/hello_hero_card.dart
+import 'package:cyberdriver/core/ui/kicker.dart';
 import 'package:cyberdriver/generated/assets.dart';
 import 'package:flutter/material.dart';
 
-import 'hello_card_base.dart';
-import 'hello_kicker.dart';
+import '../../../core/ui/card_base.dart';
 
-class HelloHeroCard extends HelloCardBase {
+
+class HelloHeroCard extends CardBase {
   const HelloHeroCard({super.key});
 
   // В hero мы сами делаем внутренние отступы, поэтому базовые отключаем,
@@ -65,7 +66,7 @@ class HelloHeroCard extends HelloCardBase {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const HelloKicker('[ЧТО ЭТО]'),
+                    const Kicker('[ЧТО ЭТО]'),
                     const SizedBox(height: 8),
                     Text(
                       'ГОТОВЫ\nПОГОНЯТЬ?',

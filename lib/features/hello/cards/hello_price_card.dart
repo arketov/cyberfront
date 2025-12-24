@@ -1,9 +1,10 @@
 //lib/features/hello/cards/hello_price_card.dart
+import 'package:cyberdriver/core/ui/kicker.dart';
 import 'package:flutter/material.dart';
-import 'hello_card_base.dart';
-import 'hello_kicker.dart';
+import '../../../core/ui/card_base.dart';
 
-class HelloPriceCard extends HelloCardBase {
+
+class HelloPriceCard extends CardBase {
   const HelloPriceCard({super.key});
 
   @override
@@ -55,7 +56,7 @@ class HelloPriceCard extends HelloCardBase {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const HelloKicker('[ЭТО БАЗА]', color: Colors.white70),
+        const Kicker('[ЭТО БАЗА]', color: Colors.white70),
         const SizedBox(height: 10),
         const Text(
           '600 ₽/час',

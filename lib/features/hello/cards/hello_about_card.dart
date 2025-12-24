@@ -1,9 +1,9 @@
 //lib/features/hello/cards/hello_about_card.dart
+import 'package:cyberdriver/core/ui/kicker.dart';
 import 'package:flutter/material.dart';
-import 'hello_card_base.dart';
-import 'hello_kicker.dart';
+import '../../../core/ui/card_base.dart';
 
-class HelloAboutCard extends HelloCardBase {
+class HelloAboutCard extends CardBase {
   const HelloAboutCard({super.key});
 
   @override
@@ -17,7 +17,7 @@ class HelloAboutCard extends HelloCardBase {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const HelloKicker('[ЧТО ЭТО ТАКОЕ]', color: Colors.black54,),
+        const Kicker('[ЧТО ЭТО ТАКОЕ]', color: Colors.black54,),
         const SizedBox(height: 10),
         Text(
           'ЭТО ВЕСЁЛЫЕ\nГОНКИ\nС ПАРНЯМИ',
