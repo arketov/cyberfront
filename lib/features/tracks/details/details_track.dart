@@ -9,6 +9,7 @@ import 'package:cyberdriver/core/ui/cyber_dots_loader.dart';
 import 'package:cyberdriver/core/ui/infinite_ticker.dart';
 import 'package:cyberdriver/features/tracks/data/tracks_api.dart';
 import 'package:cyberdriver/features/tracks/details/cards/track_hello.dart';
+import 'package:cyberdriver/features/tracks/details/cards/track_props.dart';
 import 'package:cyberdriver/shared/models/track_dto.dart';
 import 'package:flutter/material.dart';
 
@@ -147,12 +148,13 @@ class _TrackDetailsBodyState extends State<_TrackDetailsBody> {
   @override
   Widget build(BuildContext context) {
     if (widget.initialDto != null) {
-      return HelloTrackCard();
+      final dto = widget.initialDto!;
+      return _TrackDetailsCards(dto: dto);
     }
 
     final future = _future;
     if (future == null) {
-      return HelloTrackCard();
+      return const SizedBox.shrink();
     }
 
     return FutureBuilder<TrackDto>(
@@ -190,8 +192,41 @@ class _TrackDetailsBodyState extends State<_TrackDetailsBody> {
           );
         }
 
-        return HelloTrackCard();
+        final dto = snap.data!;
+        return _TrackDetailsCards(dto: dto);
       },
+    );
+  }
+}
+
+class _TrackDetailsCards extends StatelessWidget {
+  const _TrackDetailsCards({required this.dto});
+
+  final TrackDto dto;
+
+  String _safeText(String? value) {
+    final v = value?.trim();
+    return (v == null || v.isEmpty) ? '-' : v;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        HelloTrackCard(
+          name: dto.name,
+          countryCode: dto.country,
+          city: dto.city,
+          lengthKm: dto.lengthKm,
+        ),
+        const SizedBox(height: 12),
+        PropTrackCard(
+          width: _safeText(dto.width),
+          pitboxes: _safeText(dto.pitboxes),
+          year: dto.year?.toString() ?? '-',
+          run: _safeText(dto.run),
+        ),
+      ],
     );
   }
 }

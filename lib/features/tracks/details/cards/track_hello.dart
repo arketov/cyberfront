@@ -2,13 +2,24 @@
 import 'package:cyberdriver/core/ui/card_base.dart';
 import 'package:cyberdriver/core/ui/kicker.dart';
 import 'package:cyberdriver/core/ui/track_meta_pills.dart';
-import 'package:cyberdriver/generated/assets.dart';
+import 'package:cyberdriver/shared/countries_ru.dart';
 import 'package:flutter/material.dart';
 
 
 
 class HelloTrackCard extends CardBase {
-  const HelloTrackCard({super.key});
+  const HelloTrackCard({
+    super.key,
+    required this.name,
+    required this.countryCode,
+    required this.city,
+    required this.lengthKm,
+  });
+
+  final String name;
+  final String countryCode;
+  final String? city;
+  final double lengthKm;
 
   @override
   EdgeInsetsGeometry get padding => EdgeInsets.zero;
@@ -59,10 +70,10 @@ class HelloTrackCard extends CardBase {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: hasBoundedHeight ? MainAxisSize.max : MainAxisSize.min,
                   children: [
-                    const Kicker('[TRACK INFO]'),
+                    const Kicker('[ЭТО ТРЕК]'),
                     const SizedBox(height: 8),
                     Text(
-                      'Track Name',
+                      name,
                       style: TextStyle(
                         height: .92,
                         fontSize: isNarrow ? 40 : 54,
@@ -74,10 +85,19 @@ class HelloTrackCard extends CardBase {
                     const SizedBox(height: 30),
                     if (hasBoundedHeight) const Spacer(),
                     Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
                       children: [
-                        MetaPill(label: 'FR', value: 'France'),
-                        MetaPill(label: 'City', value: 'Le Castellet'),
-                        MetaPill(label: 'Length', value: '5.8 km'),
+                        MetaPill(
+                          label: countryCode.toUpperCase(),
+                          value: countryNameRu(countryCode).toUpperCase(),
+                        ),
+                        if (city != null && city!.trim().isNotEmpty)
+                          MetaPill(label: 'Город', value: city!.trim()),
+                        MetaPill(
+                          label: 'Длина',
+                          value: '${lengthKm.toStringAsFixed(1)} км',
+                        ),
                       ],
                     ),
                   ],
