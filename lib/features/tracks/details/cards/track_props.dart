@@ -1,27 +1,7 @@
 import 'package:cyberdriver/core/ui/card_base.dart';
 import 'package:cyberdriver/core/ui/kicker.dart';
+import 'package:cyberdriver/core/ui/sub_card.dart';
 import 'package:flutter/material.dart';
-
-class PropSubCard extends CardBase {
-  const PropSubCard({super.key, required this.title, required this.value});
-
-  final String title;
-  final String value;
-
-  @override
-  Color? backgroundColor(BuildContext context) => const Color(0xFFA9A9A9);
-
-  @override
-  bool get backgroundGradientEnabled => false;
-
-  @override
-  Widget buildContent(BuildContext context) {
-    return ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: 50, minWidth: 100),
-      child: Column(children: [Text(title), Text(value)]),
-    );
-  }
-}
 
 class PropTrackCard extends CardBase {
   const PropTrackCard({
@@ -83,6 +63,10 @@ class PropTrackCard extends CardBase {
                 builder: (context, c) {
                   final isNarrow = c.maxWidth < 520;
                   final hasBoundedHeight = c.hasBoundedHeight;
+                  const itemSpacing = 10.0;
+                  final columns = c.maxWidth < 200 ? 1 : (isNarrow ? 2 : 4);
+                  final itemWidth =
+                      (c.maxWidth - (itemSpacing * (columns - 1))) / columns;
 
                   final content = Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -91,15 +75,33 @@ class PropTrackCard extends CardBase {
                         : MainAxisSize.min,
                     children: [
                       const Kicker('[ЭТО ПАРАМЕТРЫ]'),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 10),
                       Wrap(
-                        spacing: 10,
-                        runSpacing: 10,
+                        spacing: itemSpacing,
+                        runSpacing: itemSpacing,
                         children: [
-                          PropSubCard(title: 'Width', value: width),
-                          PropSubCard(title: 'Pitboxes', value: pitboxes),
-                          PropSubCard(title: 'Year', value: year),
-                          PropSubCard(title: 'Run', value: run),
+                          SizedBox(
+                            width: itemWidth,
+                            child: SubCard(title: 'ШИРИНА', value: width,),
+                          ),
+                          SizedBox(
+                            width: itemWidth,
+                            child: SubCard(
+                              title: 'ПИТБОКСЫ',
+                              value: pitboxes,
+                            ),
+                          ),
+                          SizedBox(
+                            width: itemWidth,
+                            child: SubCard(title: 'ГОД', value: year),
+                          ),
+                          SizedBox(
+                            width: itemWidth,
+                            child: SubCard(
+                              title: 'НАПРАВЛЕНИЕ',
+                              value: run,
+                            ),
+                          ),
                         ],
                       ),
                     ],

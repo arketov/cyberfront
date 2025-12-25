@@ -144,12 +144,12 @@ abstract class CardBase extends StatelessWidget {
                       child: DecoratedBox(
                         decoration: BoxDecoration(
                           borderRadius: rInner,
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomCenter,
-                            stops: const [0.0, 0.65],
+                          gradient: RadialGradient(
+                            radius: 1.7,
+                            center: Alignment.topLeft,
+                            stops: const [0.0, 0.5],
                             colors: [
-                              Colors.white.withOpacity(.10),
+                              Colors.white.withOpacity(.12),
                               Colors.transparent,
                             ],
                           ),
