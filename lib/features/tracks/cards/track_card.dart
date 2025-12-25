@@ -7,7 +7,15 @@ class _TrackCard extends CardBase {
   final _TrackItem item;
 
   @override
-  EdgeInsetsGeometry get padding => const EdgeInsets.fromLTRB(6, 6, 6, 6);
+  EdgeInsetsGeometry get padding => const EdgeInsets.fromLTRB(0, 0, 18, 0);
+
+  @override
+  VoidCallback? onTap(BuildContext context) {
+    return () => Navigator.of(context).pushNamed(
+          '/tracks/${item.id}',
+          arguments: item.dto,
+        );
+  }
 
   @override
   Widget buildContent(BuildContext context) {
@@ -72,7 +80,7 @@ class _TrackCard extends CardBase {
                           runSpacing: 6,
                           children: [
                             _Pill(
-                              text: '${item.lengthKm.toStringAsFixed(1)} км',
+                              text: '${item.lengthKm.toStringAsFixed(1)} km',
                             ),
                             ConstrainedBox(
                               constraints: BoxConstraints(
@@ -148,7 +156,6 @@ class _MapThumbState extends State<_MapThumb> {
               return Stack(
                 fit: StackFit.expand,
                 children: [
-                  // опционально: очень лёгкий фон под превью (если нужно)
                   // ColoredBox(color: cs.surface.withOpacity(0.04)),
 
                   Padding(

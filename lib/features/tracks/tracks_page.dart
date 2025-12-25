@@ -175,6 +175,7 @@ class _CountryPopupField extends StatelessWidget {
 
 class _TrackItem {
   const _TrackItem({
+    required this.dto,
     required this.id, // INT, но на UI НЕ показываем
     required this.name,
     required this.countryCode,
@@ -183,6 +184,7 @@ class _TrackItem {
   });
 
   final int id;
+  final TrackDto dto;
   final String name;
   final String countryCode;
   final double lengthKm;
@@ -324,6 +326,7 @@ class _TracksListBlockState extends State<_TracksListBlock> {
     return tracks
         .map(
           (t) => _TrackItem(
+            dto: t,
             id: t.id,
             name: t.name,
             countryCode: t.country,

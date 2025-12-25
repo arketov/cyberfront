@@ -1,6 +1,7 @@
 // lib/features/hello/cards/card_base.dart
 import 'dart:math' as math;
 import 'package:cyberdriver/core/theme/app_theme.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 abstract class CardBase extends StatelessWidget {
@@ -13,7 +14,7 @@ abstract class CardBase extends StatelessWidget {
   BorderRadius get radius => BorderRadius.circular(20);
 
   /// Фон карты (как у тебя было).
-  Color? backgroundColor(BuildContext context) => Colors.black;
+  Color? backgroundColor(BuildContext context) => Colors.black.withValues(alpha: 0.97);
   /// Ширина обводки.
   double get borderWidth => 1;
 
@@ -52,9 +53,9 @@ abstract class CardBase extends StatelessWidget {
       stops.add(i / segments);
     }
 
-    final seed = Object.hash(runtimeType, key);
+    final seed = Object.hash(runtimeType, key, identityHashCode(this));
     final rnd = math.Random(seed);
-    final rotation = (rnd.nextDouble() * 2 - 1) * 0.6;
+    final rotation = (0.3 * 2 - 1) * 0.6;
 
     return SweepGradient(
       center: Alignment.center,
@@ -137,6 +138,7 @@ abstract class CardBase extends StatelessWidget {
                 ),
 
                 if (insetShadowEnabled) ...[
+                  // Белая херня
                   Positioned.fill(
                     child: IgnorePointer(
                       child: DecoratedBox(
@@ -144,7 +146,7 @@ abstract class CardBase extends StatelessWidget {
                           borderRadius: rInner,
                           gradient: LinearGradient(
                             begin: Alignment.topLeft,
-                            end: Alignment.center,
+                            end: Alignment.bottomCenter,
                             stops: const [0.0, 0.65],
                             colors: [
                               Colors.white.withOpacity(.10),
@@ -155,6 +157,7 @@ abstract class CardBase extends StatelessWidget {
                       ),
                     ),
                   ),
+                  //Чёрная херня
                   Positioned.fill(
                     child: IgnorePointer(
                       child: DecoratedBox(
@@ -166,7 +169,7 @@ abstract class CardBase extends StatelessWidget {
                             stops: const [0, 1],
                             colors: [
                               Colors.transparent,
-                              Colors.black.withOpacity(.11),
+                              Colors.black.withOpacity(.05),
                             ],
                           ),
                         ),

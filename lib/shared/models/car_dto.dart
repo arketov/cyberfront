@@ -27,17 +27,25 @@ class CarDto {
     this.deletedAt,
   });
 
+  static String _readString(Map<String, dynamic> json, String key) {
+    final value = json[key];
+    if (value is String) {
+      return value;
+    }
+    return value?.toString() ?? '';
+  }
+
   factory CarDto.fromJson(Map<String, dynamic> json) => CarDto(
         id: json['id'] as int,
-        country: json['country'] as String,
-        brand: json['brand'] as String,
-        model: json['model'] as String,
+        country: _readString(json, 'country'),
+        brand: _readString(json, 'brand'),
+        model: _readString(json, 'model'),
         power: json['power'] as int,
         torque: json['torque'] as int,
         massPowerRatio: (json['mass_power_ratio'] as num).toDouble(),
-        transmission: json['transmission'] as String,
-        imageHash: json['image_hash'] as String,
-        createdAt: json['created_at'] as String,
+        transmission: _readString(json, 'transmission'),
+        imageHash: _readString(json, 'image_hash'),
+        createdAt: _readString(json, 'created_at'),
         updatedAt: json['updated_at'] as String?,
         deletedAt: json['deleted_at'] as String?,
       );

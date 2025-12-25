@@ -29,6 +29,14 @@ class TracksApi {
 
   final RestApiClient _client;
 
+  Future<TrackDto> getTrack(int id) async {
+    final response = await _client.get<TrackDto>(
+      'tracks/$id',
+      parse: (json) => TrackDto.fromJson(json as Map<String, dynamic>),
+    );
+    return response.data;
+  }
+
   Future<TracksPageDto> getTracks({
     int? page,
     String? countryCode,
