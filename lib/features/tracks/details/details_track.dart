@@ -10,6 +10,7 @@ import 'package:cyberdriver/core/ui/widgets/infinite_ticker.dart';
 import 'package:cyberdriver/features/tracks/data/tracks_api.dart';
 import 'package:cyberdriver/features/tracks/details/cards/track_hello.dart';
 import 'package:cyberdriver/features/tracks/details/cards/track_props.dart';
+import 'package:cyberdriver/features/tracks/details/cards/track_records.dart';
 import 'package:cyberdriver/shared/models/track_dto.dart';
 import 'package:flutter/material.dart';
 
@@ -212,23 +213,26 @@ class _TrackDetailsCards extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: [
-        HelloTrackCard(
-          name: dto.name,
-          countryCode: dto.country,
-          city: dto.city,
-          lengthKm: dto.lengthKm,
-        ),
-        const SizedBox(height: 12),
-        PropTrackCard(
-          width: _safeText(dto.width),
-          pitboxes: _safeText(dto.pitboxes),
-          year: dto.year?.toString() ?? '-',
-          run: _safeText(dto.run),
-          tags: dto.tags,
-          descr: dto.description,
-        ),
-      ],
+        children: [
+          HelloTrackCard(
+            name: dto.name,
+            countryCode: dto.country,
+            city: dto.city,
+            lengthKm: dto.lengthKm,
+          ),
+          const SizedBox(height: 12),
+          PropTrackCard(
+            width: _safeText(dto.width),
+            pitboxes: _safeText(dto.pitboxes),
+            year: dto.year?.toString() ?? '-',
+            run: _safeText(dto.run),
+            tags: dto.tags,
+            descr: dto.description,
+          ),
+          const SizedBox(height: 12,),
+          RecordsTrackCard(trackId: dto.id,)
+        ]
     );
   }
 }
+
