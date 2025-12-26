@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'package:cyberdriver/core/navigation/app_section.dart';
 import 'package:cyberdriver/core/ui/base_page.dart';
-import 'package:cyberdriver/core/ui/infinite_ticker.dart';
+import 'package:cyberdriver/core/ui/widgets/infinite_ticker.dart';
 
 import 'cards/hello_hero_card.dart';
 import 'cards/hello_grid_section.dart';

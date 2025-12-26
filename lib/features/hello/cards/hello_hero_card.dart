@@ -1,9 +1,9 @@
 // lib/features/hello/cards/hello_hero_card.dart
-import 'package:cyberdriver/core/ui/kicker.dart';
+import 'package:cyberdriver/core/ui/widgets/kicker.dart';
 import 'package:cyberdriver/generated/assets.dart';
 import 'package:flutter/material.dart';
 
-import '../../../core/ui/card_base.dart';
+import '../../../core/ui/cards/card_base.dart';
 
 
 class HelloHeroCard extends CardBase {

@@ -5,8 +5,8 @@ import 'package:cyberdriver/core/config/app_config.dart';
 import 'package:cyberdriver/core/navigation/app_section.dart';
 import 'package:cyberdriver/core/network/network.dart';
 import 'package:cyberdriver/core/ui/base_page.dart';
-import 'package:cyberdriver/core/ui/cyber_dots_loader.dart';
-import 'package:cyberdriver/core/ui/infinite_ticker.dart';
+import 'package:cyberdriver/core/ui/widgets/cyber_dots_loader.dart';
+import 'package:cyberdriver/core/ui/widgets/infinite_ticker.dart';
 import 'package:cyberdriver/features/tracks/data/tracks_api.dart';
 import 'package:cyberdriver/features/tracks/details/cards/track_hello.dart';
 import 'package:cyberdriver/features/tracks/details/cards/track_props.dart';
@@ -99,7 +99,7 @@ class TrackDetailsPage extends BasePage {
   @override
   List<Widget> buildBlocks(BuildContext context) => [
     _TrackDetailsBody(trackId: trackId, initialDto: dto),
-      ];
+  ];
 }
 
 class _TrackDetailsBody extends StatefulWidget {
@@ -225,6 +225,8 @@ class _TrackDetailsCards extends StatelessWidget {
           pitboxes: _safeText(dto.pitboxes),
           year: dto.year?.toString() ?? '-',
           run: _safeText(dto.run),
+          tags: dto.tags,
+          descr: dto.description,
         ),
       ],
     );

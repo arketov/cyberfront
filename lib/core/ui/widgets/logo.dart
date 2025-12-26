@@ -1,6 +1,6 @@
 // lib/core/ui/logo.dart
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
+import 'package:cyberdriver/core/theme/app_theme.dart';
 
 class Logo extends StatelessWidget {
   const Logo({

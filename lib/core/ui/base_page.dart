@@ -5,7 +5,7 @@ import 'package:cyberdriver/core/navigation/app_section.dart';
 import 'package:cyberdriver/core/navigation/app_route_observer.dart';
 import 'package:cyberdriver/core/ui/app_scaffold.dart';
 import 'package:cyberdriver/core/ui/app_scroll_behavior.dart';
-import 'package:cyberdriver/core/ui/infinite_ticker.dart';
+import 'package:cyberdriver/core/ui/widgets/infinite_ticker.dart';
 
 abstract class BasePage extends StatefulWidget {
   const BasePage({super.key});

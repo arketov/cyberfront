@@ -1,7 +1,7 @@
 // lib/core/ui/app_scaffold.dart
 
 import 'dart:ui';
-import 'package:cyberdriver/core/ui/logo.dart';
+import 'package:cyberdriver/core/ui/widgets/logo.dart';
 import 'package:flutter/material.dart';
 
 import '../navigation/app_section.dart';

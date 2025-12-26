@@ -1,10 +1,10 @@
 //lib/features/hello/cards/hello_top_records_card.dart
 import 'dart:math' as math;
 
-import 'package:cyberdriver/core/ui/cyber_dots_loader.dart';
-import 'package:cyberdriver/core/ui/kicker.dart';
+import 'package:cyberdriver/core/ui/widgets/cyber_dots_loader.dart';
+import 'package:cyberdriver/core/ui/widgets/kicker.dart';
 import 'package:flutter/material.dart';
-import '../../../core/ui/card_base.dart';
+import '../../../core/ui/cards/card_base.dart';
 
 import 'package:cyberdriver/core/config/app_config.dart';
 import 'package:cyberdriver/core/network/network.dart';
@@ -358,7 +358,7 @@ class GroupRecordRow extends StatelessWidget {
       ),
     );
 
-}
+  }
 
   static String _defaultLapTime(double seconds) {
     if (seconds.isNaN || seconds.isInfinite || seconds < 0) return '—';

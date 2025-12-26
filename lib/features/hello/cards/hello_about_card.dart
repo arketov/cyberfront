@@ -1,7 +1,7 @@
 //lib/features/hello/cards/hello_about_card.dart
-import 'package:cyberdriver/core/ui/kicker.dart';
+import 'package:cyberdriver/core/ui/widgets/kicker.dart';
 import 'package:flutter/material.dart';
-import '../../../core/ui/card_base.dart';
+import '../../../core/ui/cards/card_base.dart';
 
 class HelloAboutCard extends CardBase {
   const HelloAboutCard({super.key});

@@ -7,8 +7,8 @@ import 'dart:math';
 import 'package:cyberdriver/core/config/app_config.dart';
 import 'package:cyberdriver/core/media/media_cache_service.dart';
 import 'package:cyberdriver/core/network/network.dart';
-import 'package:cyberdriver/core/ui/cyber_dots_loader.dart';
-import 'package:cyberdriver/core/ui/kicker.dart';
+import 'package:cyberdriver/core/ui/widgets/cyber_dots_loader.dart';
+import 'package:cyberdriver/core/ui/widgets/kicker.dart';
 import 'package:cyberdriver/features/tracks/data/tracks_api.dart';
 import 'package:cyberdriver/shared/countries_ru.dart';
 import 'package:cyberdriver/shared/models/track_dto.dart';
@@ -16,8 +16,8 @@ import 'package:flutter/material.dart';
 
 import 'package:cyberdriver/core/navigation/app_section.dart';
 import 'package:cyberdriver/core/ui/base_page.dart';
-import 'package:cyberdriver/core/ui/infinite_ticker.dart';
-import 'package:cyberdriver/core/ui/card_base.dart';
+import 'package:cyberdriver/core/ui/widgets/infinite_ticker.dart';
+import 'package:cyberdriver/core/ui/cards/card_base.dart';
 part 'cards/controls.dart';
 part 'cards/track_card.dart';
 

@@ -1,6 +1,6 @@
 // lib/cor/ui/sub_card.dart
 
-import 'package:cyberdriver/core/ui/card_base.dart';
+import 'package:cyberdriver/core/ui/cards/card_base.dart';
 import 'package:flutter/material.dart';
 
 enum SubCardTone { pink, blue }
@@ -49,11 +49,11 @@ class SubCard extends CardBase {
   final String value;
   final SubCardTone tone;
 
-  static const _pinkBg = Colors.black87;
+  static final _pinkBg = const Color(0xFF701055).withValues(alpha: .9);
   static const _pinkStroke = Color(0xFFFF2BD6);
 
-  static const _blueBg = Color(0xFF10182B);
-  static const _blueStroke = Color(0xFF162A61); // “киношный” тёмно-синий
+  static final _blueBg = const Color(0xFF0B2C7C).withValues(alpha: .9);
+  static const _blueStroke = Color(0xFF1557FF);
 
   Color get _bg => tone == SubCardTone.pink ? _pinkBg : _blueBg;
 
@@ -92,10 +92,10 @@ class SubCard extends CardBase {
       center: Alignment.center,
       radius: 1.1,
       focal: Alignment.centerLeft,
-      stops: const [0.0, .8, ],
+      stops: const [0, 0.5, ],
       colors: [
-        const Color(0xFF701055).withValues(alpha: .9),
-        Colors.black
+        _bg.withValues(alpha: 1),
+        ?Color.lerp(Colors.black, _bg.withValues(alpha: 1), 0.3)
       ],
       transform: const _AspectRadialTransform(),
     );
@@ -122,7 +122,7 @@ class SubCard extends CardBase {
     final lineColor = Colors.white.withOpacity(.30);
 
     return ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: 50),
+      constraints: const BoxConstraints(minHeight: 40),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

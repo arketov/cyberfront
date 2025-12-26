@@ -1,6 +1,8 @@
-import 'package:cyberdriver/core/ui/card_base.dart';
-import 'package:cyberdriver/core/ui/kicker.dart';
-import 'package:cyberdriver/core/ui/sub_card.dart';
+import 'package:cyberdriver/core/ui/cards/card_base.dart';
+import 'package:cyberdriver/core/ui/widgets/fade_divider.dart';
+import 'package:cyberdriver/core/ui/widgets/kicker.dart';
+import 'package:cyberdriver/core/ui/widgets/sub_card.dart';
+import 'package:cyberdriver/core/ui/widgets/track_meta_pills.dart';
 import 'package:flutter/material.dart';
 
 class PropTrackCard extends CardBase {
@@ -10,12 +12,16 @@ class PropTrackCard extends CardBase {
     required this.pitboxes,
     required this.year,
     required this.run,
-  });
+    required this.descr,
+    List<String>? tags,
+  }) : tags = tags ?? const [];
 
   final String width;
   final String pitboxes;
   final String year;
   final String run;
+  final String? descr;
+  final List<String> tags;
 
   @override
   EdgeInsetsGeometry get padding => EdgeInsets.zero;
@@ -68,6 +74,7 @@ class PropTrackCard extends CardBase {
                   final itemWidth =
                       (c.maxWidth - (itemSpacing * (columns - 1))) / columns;
 
+                  final hasDescr = descr != null && descr!.trim().isNotEmpty;
                   final content = Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: hasBoundedHeight
@@ -82,13 +89,18 @@ class PropTrackCard extends CardBase {
                         children: [
                           SizedBox(
                             width: itemWidth,
-                            child: SubCard(title: 'ШИРИНА', value: width,),
+                            child: SubCard(
+                              title: 'ШИРИНА',
+                              value: width,
+                              tone: SubCardTone.blue,
+                            ),
                           ),
                           SizedBox(
                             width: itemWidth,
                             child: SubCard(
                               title: 'ПИТБОКСЫ',
                               value: pitboxes,
+                              tone: SubCardTone.blue,
                             ),
                           ),
                           SizedBox(
@@ -97,13 +109,44 @@ class PropTrackCard extends CardBase {
                           ),
                           SizedBox(
                             width: itemWidth,
-                            child: SubCard(
-                              title: 'НАПРАВЛЕНИЕ',
-                              value: run,
-                            ),
+                            child: SubCard(title: 'НАПРАВЛЕНИЕ', value: run),
                           ),
                         ],
                       ),
+                      const SizedBox(height: 10),
+                      FadeDivider(),
+                      const SizedBox(height: 10),
+                      // описание
+                      if (hasDescr)
+                        SizedBox(
+                          width: double.infinity,
+                          child: MetaPill(
+                            value: descr!.trim(),
+                            padding: const EdgeInsets.all(15),
+                            radius: 20,
+                            valueFontWeight: FontWeight.w400,
+                            contentAlignment: Alignment.centerLeft,
+                            wrapAlignment: WrapAlignment.start,
+                          ),
+                        ),
+                      const SizedBox(height: 10),
+                      // теги
+                      if (tags.isNotEmpty)
+                        Wrap(
+                          spacing: 10,
+                          runSpacing: 10,
+                          children: [
+                            for (var i = 0; i < tags.length; i++)
+                              MetaPill(
+                                value: '#${tags[i]}',
+                                tone: i == 0
+                                    ? MetaPillTone.pink
+                                    : (i == 1
+                                        ? MetaPillTone.blue
+                                        : MetaPillTone.dark),
+                              ),
+                          ],
+                        ),
                     ],
                   );
 

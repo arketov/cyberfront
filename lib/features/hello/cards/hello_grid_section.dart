@@ -1,5 +1,5 @@
 //lib/features/hello/cards/hello_grid_section.dart
-import 'package:cyberdriver/core/ui/equal_height_row.dart';
+import 'package:cyberdriver/core/ui/widgets/equal_height_row.dart';
 import 'package:cyberdriver/features/hello/cards/hello_price_card.dart';
 import 'package:flutter/material.dart';
 
