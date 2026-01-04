@@ -1,4 +1,4 @@
-﻿// lib/core/config/app_config.dart
+// lib/core/config/app_config.dart
 
 class AppConfig {
   const AppConfig({
@@ -17,8 +17,8 @@ class AppConfig {
     appName: 'CyberDriver',
     environment: 'dev',
     apiVersion: 'v1',
-    //apiBaseUrl: 'http://127.0.0.1:8000',
-    //apiBaseUrl: 'http://192.168.0.107:8000',
-    apiBaseUrl: 'http://10.0.2.2:8000',
+    //apiBaseUrl: 'http://127.0.0.1:8000', // desktop
+    //apiBaseUrl: 'http://192.168.0.107:8000', // phisic android
+    apiBaseUrl: 'http://46.146.94.18:8002/', // emulator android
   );
 }

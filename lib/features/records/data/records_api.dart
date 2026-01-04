@@ -12,11 +12,15 @@ class RecordsApi {
   Future<List<RecordGroupDto>> getTopGroups({
     int limit = 10,
     int? trackId,
+    int? carId,
   }) async {
     const path = 'records/top/group';
     final queryParameters = <String, dynamic>{'limit': limit};
     if (trackId != null) {
       queryParameters['track_id'] = trackId;
+    }
+    if (carId != null) {
+      queryParameters['car_id'] = carId;
     }
     final response = await _client.get<List<RecordGroupDto>>(
       path,
@@ -31,11 +35,15 @@ class RecordsApi {
   Future<List<RecordDurationDto>> getTopDurations({
     int limit = 10,
     int? trackId,
+    int? carId,
   }) async {
     const path = 'records/top/duration';
     final queryParameters = <String, dynamic>{'limit': limit};
     if (trackId != null) {
       queryParameters['track_id'] = trackId;
+    }
+    if (carId != null) {
+      queryParameters['car_id'] = carId;
     }
     final response = await _client.get<List<RecordDurationDto>>(
       path,
@@ -50,11 +58,15 @@ class RecordsApi {
   Future<List<RecordPersonalDto>> getTopPersonal({
     int limit = 10,
     int? trackId,
+    int? carId,
   }) async {
     const path = 'records/top/personal';
     final queryParameters = <String, dynamic>{'limit': limit};
     if (trackId != null) {
       queryParameters['track_id'] = trackId;
+    }
+    if (carId != null) {
+      queryParameters['car_id'] = carId;
     }
     final response = await _client.get<List<RecordPersonalDto>>(
       path,

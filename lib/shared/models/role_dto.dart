@@ -1,3 +1,5 @@
+import 'json_utils.dart';
+
 class RoleDto {
   final int id;
   final String name;
@@ -8,7 +10,7 @@ class RoleDto {
   });
 
   factory RoleDto.fromJson(Map<String, dynamic> json) => RoleDto(
-        id: json['id'] as int,
-        name: json['name'] as String,
+        id: JsonUtils.asInt(json['id']) ?? 0,
+        name: JsonUtils.asString(json['name']) ?? '',
       );
 }

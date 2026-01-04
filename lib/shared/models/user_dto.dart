@@ -1,3 +1,4 @@
+import 'json_utils.dart';
 import 'role_dto.dart';
 
 class UserDto {
@@ -18,11 +19,11 @@ class UserDto {
   });
 
   factory UserDto.fromJson(Map<String, dynamic> json) => UserDto(
-        id: json['id'] as int,
-        login: json['login'] as String,
-        name: json['name'] as String,
-        email: json['email'] as String,
+        id: JsonUtils.asInt(json['id']) ?? 0,
+        login: JsonUtils.asString(json['login']) ?? '',
+        name: JsonUtils.asString(json['name']) ?? '',
+        email: JsonUtils.asString(json['email']) ?? '',
         role: RoleDto.fromJson(json['role'] as Map<String, dynamic>),
-        imageHash: json['image_hash'] as String,
+        imageHash: JsonUtils.asString(json['image_hash']) ?? '',
       );
 }

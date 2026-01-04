@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 
 import 'api_exception.dart';
 import 'api_response.dart';
+import '../utils/logger.dart';
 
 /// Minimal REST API client with JSON helpers and simple error handling.
 class RestApiClient {
@@ -149,16 +150,38 @@ class RestApiClient {
     final isSuccess = response.statusCode >= 200 && response.statusCode < 300;
 
     if (isSuccess) {
-      final parsed = parse != null ? parse(decoded) : decoded as T;
+      if (parse != null) {
+        try {
+          final parsed = parse(decoded);
+          return ApiResponse(
+            statusCode: response.statusCode,
+            data: parsed,
+            rawBody: response.body,
+            headers: response.headers,
+          );
+        } catch (error, stackTrace) {
+          logger.severe('Failed to parse response: $uri', error, stackTrace);
+          throw ApiException(
+            statusCode: response.statusCode,
+            message: 'Failed to parse response',
+            body: response.body,
+            uri: uri,
+          );
+        }
+      }
       return ApiResponse(
         statusCode: response.statusCode,
-        data: parsed,
+        data: decoded as T,
         rawBody: response.body,
         headers: response.headers,
       );
     }
 
     final message = _errorMessage(decoded, response.statusCode);
+    logger.warning(
+      'Request failed: ${response.statusCode} $uri',
+      message,
+    );
     throw ApiException(
       statusCode: response.statusCode,
       message: message,

@@ -1,4 +1,4 @@
-// lib/features/hello/cards/hello_hero_card.dart
+// lib/features/cars/details/cards/car_records.dart
 import 'package:cyberdriver/core/ui/cards/card_base.dart';
 import 'package:cyberdriver/core/ui/widgets/duration_record_list.dart';
 import 'package:cyberdriver/core/ui/widgets/group_record_list.dart';
@@ -7,35 +7,35 @@ import 'package:cyberdriver/core/ui/widgets/personal_record_list.dart';
 import 'package:cyberdriver/core/ui/widgets/track_meta_pills.dart';
 import 'package:flutter/material.dart';
 
-class RecordsTrackCard extends CardBase {
-  const RecordsTrackCard({
+class RecordsCarCard extends CardBase {
+  const RecordsCarCard({
     super.key,
-    required this.trackId,
+    required this.carId,
   });
 
-  final int trackId;
+  final int carId;
 
   @override
   EdgeInsetsGeometry get padding => EdgeInsets.zero;
 
   @override
   Widget buildContent(BuildContext context) {
-    return _RecordsTrackContent(trackId: trackId);
+    return _RecordsCarContent(carId: carId);
   }
 }
 
 enum _RecordsTab { group, duration, personal }
 
-class _RecordsTrackContent extends StatefulWidget {
-  const _RecordsTrackContent({required this.trackId});
+class _RecordsCarContent extends StatefulWidget {
+  const _RecordsCarContent({required this.carId});
 
-  final int trackId;
+  final int carId;
 
   @override
-  State<_RecordsTrackContent> createState() => _RecordsTrackContentState();
+  State<_RecordsCarContent> createState() => _RecordsCarContentState();
 }
 
-class _RecordsTrackContentState extends State<_RecordsTrackContent> {
+class _RecordsCarContentState extends State<_RecordsCarContent> {
   _RecordsTab _tab = _RecordsTab.group;
 
   @override
@@ -45,11 +45,11 @@ class _RecordsTrackContentState extends State<_RecordsTrackContent> {
     Widget buildList() {
       switch (_tab) {
         case _RecordsTab.group:
-          return GroupRecordList(trackId: widget.trackId, limit: 10);
+          return GroupRecordList(carId: widget.carId, limit: 10);
         case _RecordsTab.duration:
-          return DurationRecordList(trackId: widget.trackId, limit: 10);
+          return DurationRecordList(carId: widget.carId, limit: 10);
         case _RecordsTab.personal:
-          return PersonalRecordList(trackId: widget.trackId, limit: 10);
+          return PersonalRecordList(carId: widget.carId, limit: 10);
       }
     }
 

@@ -9,6 +9,7 @@ import 'package:cyberdriver/core/media/media_cache_service.dart';
 import 'package:cyberdriver/core/network/network.dart';
 import 'package:cyberdriver/core/ui/widgets/cyber_dots_loader.dart';
 import 'package:cyberdriver/core/ui/widgets/kicker.dart';
+import 'package:cyberdriver/core/utils/logger.dart';
 import 'package:cyberdriver/features/tracks/data/tracks_api.dart';
 import 'package:cyberdriver/shared/countries_ru.dart';
 import 'package:cyberdriver/shared/models/track_dto.dart';
@@ -187,7 +188,7 @@ class _TrackItem {
   final TrackDto dto;
   final String name;
   final String countryCode;
-  final double lengthKm;
+  final String lengthKm;
   final String mapImageId;
 }
 
@@ -312,7 +313,8 @@ class _TracksListBlockState extends State<_TracksListBlock> {
         _isLoadingInitial = false;
         _isLoadingMore = false;
       });
-    } catch (_) {
+    } catch (error, stackTrace) {
+      logger.warning('Failed to load tracks', error, stackTrace);
       if (!mounted) return;
       setState(() {
         _error = 'Failed to load tracks';

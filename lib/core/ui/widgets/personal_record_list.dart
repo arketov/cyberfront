@@ -11,10 +11,12 @@ class PersonalRecordList extends StatefulWidget {
   const PersonalRecordList({
     super.key,
     this.trackId,
+    this.carId,
     this.limit,
   });
 
   final int? trackId;
+  final int? carId;
   final int? limit;
 
   @override
@@ -26,7 +28,7 @@ class _PersonalRecordListState extends State<PersonalRecordList> {
 
   late final RecordsApi _api;
 
-  /// Кэшируем Future по trackId+limit, чтобы не дергать API на каждый rebuild.
+  /// Кэшируем Future по trackId/carId+limit, чтобы не дергать API на каждый rebuild.
   final Map<_RecordsKey, Future<List<RecordPersonalDto>>> _futureByKey = {};
 
   @override
@@ -36,26 +38,28 @@ class _PersonalRecordListState extends State<PersonalRecordList> {
     _api = RecordsApi(client);
   }
 
-  Future<List<RecordPersonalDto>> _getFuture(int limit, int? trackId) {
-    final key = _RecordsKey(limit, trackId);
+  Future<List<RecordPersonalDto>> _getFuture(int limit, int? trackId, int? carId) {
+    final key = _RecordsKey(limit, trackId, carId);
     return _futureByKey.putIfAbsent(
       key,
-      () => _api.getTopPersonal(limit: limit, trackId: trackId),
+      () => _api.getTopPersonal(limit: limit, trackId: trackId, carId: carId),
     );
   }
 
-  void _retry(int limit, int? trackId) {
-    final key = _RecordsKey(limit, trackId);
+  void _retry(int limit, int? trackId, int? carId) {
+    final key = _RecordsKey(limit, trackId, carId);
     setState(() {
       _futureByKey.remove(key);
-      _futureByKey[key] = _api.getTopPersonal(limit: limit, trackId: trackId);
+      _futureByKey[key] = _api.getTopPersonal(limit: limit, trackId: trackId, carId: carId);
     });
   }
 
   @override
   void didUpdateWidget(covariant PersonalRecordList oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.limit != widget.limit || oldWidget.trackId != widget.trackId) {
+    if (oldWidget.limit != widget.limit ||
+        oldWidget.trackId != widget.trackId ||
+        oldWidget.carId != widget.carId) {
       _futureByKey.clear();
     }
   }
@@ -70,9 +74,10 @@ class _PersonalRecordListState extends State<PersonalRecordList> {
         final int visibleCount = isWide ? 3 : 5;
         final int limit = widget.limit ?? visibleCount;
         final int? trackId = widget.trackId;
+        final int? carId = widget.carId;
 
         return FutureBuilder<List<RecordPersonalDto>>(
-          future: _getFuture(limit, trackId),
+          future: _getFuture(limit, trackId, carId),
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
               return const Padding(
@@ -98,7 +103,7 @@ class _PersonalRecordListState extends State<PersonalRecordList> {
                     ),
                     const SizedBox(height: 8),
                     TextButton(
-                      onPressed: () => _retry(limit, trackId),
+                      onPressed: () => _retry(limit, trackId, carId),
                       child: const Text('Повторить'),
                     ),
                   ],
@@ -144,20 +149,22 @@ class _PersonalRecordListState extends State<PersonalRecordList> {
 }
 
 class _RecordsKey {
-  const _RecordsKey(this.limit, this.trackId);
+  const _RecordsKey(this.limit, this.trackId, this.carId);
 
   final int limit;
   final int? trackId;
+  final int? carId;
 
   @override
   bool operator ==(Object other) {
     return other is _RecordsKey &&
         other.limit == limit &&
-        other.trackId == trackId;
+        other.trackId == trackId &&
+        other.carId == carId;
   }
 
   @override
-  int get hashCode => Object.hash(limit, trackId);
+  int get hashCode => Object.hash(limit, trackId, carId);
 }
 
 class PersonalRecordRow extends StatelessWidget {

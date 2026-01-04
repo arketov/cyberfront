@@ -1,10 +1,10 @@
-// lib/features/tracks/cards/track_card.dart
-part of tracks_page;
+// lib/features/cars/cards/car_card.dart
+part of cars_page;
 
-class _TrackCard extends CardBase {
-  const _TrackCard({required this.item});
+class _CarCard extends CardBase {
+  const _CarCard({required this.item});
 
-  final _TrackItem item;
+  final _CarItem item;
 
   @override
   EdgeInsetsGeometry get padding => const EdgeInsets.fromLTRB(0, 0, 18, 0);
@@ -12,7 +12,7 @@ class _TrackCard extends CardBase {
   @override
   VoidCallback? onTap(BuildContext context) {
     return () => Navigator.of(context).pushNamed(
-          '/tracks/${item.id}',
+          '/cars/${item.id}',
           arguments: item.dto,
         );
   }
@@ -20,13 +20,6 @@ class _TrackCard extends CardBase {
   @override
   Widget buildContent(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-
-    final kicker = TextStyle(
-      fontSize: 12,
-      fontWeight: FontWeight.w900,
-      letterSpacing: 1.0,
-      color: cs.onSurface.withOpacity(0.55),
-    );
 
     final title = TextStyle(
       fontSize: 18,
@@ -37,7 +30,7 @@ class _TrackCard extends CardBase {
     );
 
     return ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: 76),
+      constraints: const BoxConstraints(minHeight: 86),
       child: SizedBox(
         width: double.infinity,
         child: Stack(
@@ -47,7 +40,7 @@ class _TrackCard extends CardBase {
               top: 0,
               bottom: 0,
               width: 100,
-              child: _MapThumb(id: item.mapImageId),
+              child: _CarThumb(id: item.imageId),
             ),
             Padding(
               padding: const EdgeInsets.only(left: 112),
@@ -67,33 +60,19 @@ class _TrackCard extends CardBase {
                     const SizedBox(height: 12),
                     LayoutBuilder(
                       builder: (context, c) {
-                        // Guard against overflow on narrow widths by constraining the country pill.
                         const pillSpacing = 8.0;
-                        const minCountryWidth = 80.0;
+                        const minCountryWidth = 90.0;
                         final countryMaxWidth = max(
                           minCountryWidth,
-                          c.maxWidth - 96,
+                          c.maxWidth - 120,
                         );
+
+                        final pills = _buildPills(item);
 
                         return Wrap(
                           spacing: pillSpacing,
                           runSpacing: 6,
-                          children: [
-                            _Pill(
-                              text: item.lengthKm,
-                            ),
-                            ConstrainedBox(
-                              constraints: BoxConstraints(
-                                maxWidth: countryMaxWidth,
-                              ),
-                              child: _Pill(
-                                text: countryNameRu(
-                                  item.countryCode,
-                                ).toUpperCase(),
-                                ellipsize: true,
-                              ),
-                            ),
-                          ],
+                          children: pills,
                         );
                       },
                     ),
@@ -107,18 +86,33 @@ class _TrackCard extends CardBase {
       ),
     );
   }
+
+  List<Widget> _buildPills(_CarItem item) {
+    final pills = <Widget>[];
+
+    if (item.pwratio.trim().isNotEmpty) {
+      pills.add(_Pill(text: item.pwratio.trim()));
+    }
+    final cls = item.carClass.trim();
+    if (cls.isNotEmpty) {
+      pills.add(_Pill(text: cls.toUpperCase()));
+    }
+
+    return pills;
+  }
+
 }
 
-class _MapThumb extends StatefulWidget {
-  const _MapThumb({required this.id});
+class _CarThumb extends StatefulWidget {
+  const _CarThumb({required this.id});
 
   final String id;
 
   @override
-  State<_MapThumb> createState() => _MapThumbState();
+  State<_CarThumb> createState() => _CarThumbState();
 }
 
-class _MapThumbState extends State<_MapThumb> {
+class _CarThumbState extends State<_CarThumb> {
   late Future<File> _future;
 
   @override
@@ -128,7 +122,7 @@ class _MapThumbState extends State<_MapThumb> {
   }
 
   @override
-  void didUpdateWidget(covariant _MapThumb oldWidget) {
+  void didUpdateWidget(covariant _CarThumb oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.id != widget.id) {
       _future = _load();
@@ -156,21 +150,13 @@ class _MapThumbState extends State<_MapThumb> {
               return Stack(
                 fit: StackFit.expand,
                 children: [
-                  // ColoredBox(color: cs.surface.withOpacity(0.04)),
-
                   Padding(
-                    padding: const EdgeInsets.all(10), // чтобы не упиралось в края клипа
-                    child: ColorFiltered(
-                      colorFilter: ColorFilter.mode(
-                        const Color(0xFFFFFFFF),
-                        BlendMode.srcATop, // лёгкий tint, прозрачность сохраняется
-                      ),
-                      child: Image.file(
-                        snap.data!,
-                        fit: BoxFit.contain, // ВЛЕЗАЕТ ПОЛНОСТЬЮ, без обрезки
-                        alignment: Alignment.center,
-                        filterQuality: FilterQuality.medium,
-                      ),
+                    padding: const EdgeInsets.all(6),
+                    child: Image.file(
+                      snap.data!,
+                      fit: BoxFit.contain,
+                      alignment: Alignment.center,
+                      filterQuality: FilterQuality.medium,
                     ),
                   ),
                 ],
@@ -187,7 +173,7 @@ class _MapThumbState extends State<_MapThumb> {
     return Container(
       color: cs.surface.withOpacity(0.35),
       alignment: Alignment.center,
-      child: Icon(Icons.map, color: cs.onSurface.withOpacity(0.35)),
+      child: Icon(Icons.directions_car, color: cs.onSurface.withOpacity(0.35)),
     );
   }
 }

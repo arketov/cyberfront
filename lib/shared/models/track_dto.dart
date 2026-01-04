@@ -1,3 +1,5 @@
+import 'json_utils.dart';
+
 class TrackDto {
   final int id;
   final String country;
@@ -11,7 +13,7 @@ class TrackDto {
   final int? year;
   final String? run;
   final String? description;
-  final double lengthKm;
+  final String lengthKm;
   final String imageHash;
   final String createdAt;
   final String? updatedAt;
@@ -38,22 +40,22 @@ class TrackDto {
   });
 
   factory TrackDto.fromJson(Map<String, dynamic> json) => TrackDto(
-        id: json['id'] as int,
-        country: (json['country_code'] ?? json['country']) as String,
-        city: (json['city'] ?? json['city_name']) as String?,
-        name: json['name'] as String,
+        id: JsonUtils.asInt(json['id']) ?? 0,
+        country: JsonUtils.asString(json['country_code'] ?? json['country']) ?? '',
+        city: JsonUtils.asString(json['city'] ?? json['city_name']),
+        name: JsonUtils.asString(json['name']) ?? '',
         tags: (json['tags'] as List?)?.map((e) => e.toString()).toList(),
-        geoLat: (json['geo_lat'] as num?)?.toDouble(),
-        geoLon: (json['geo_lon'] as num?)?.toDouble(),
-        width: json['width'] as String?,
-        pitboxes: json['pitboxes'] as String?,
-        year: (json['year'] as num?)?.toInt(),
-        run: json['run'] as String?,
-        description: json['description'] as String?,
-        lengthKm: (json['length_km'] as num).toDouble(),
-        imageHash: json['image_hash'] as String,
-        createdAt: json['created_at'] as String,
-        updatedAt: json['updated_at'] as String?,
-        deletedAt: json['deleted_at'] as String?,
+        geoLat: JsonUtils.asDouble(json['geo_lat']),
+        geoLon: JsonUtils.asDouble(json['geo_lon']),
+        width: JsonUtils.asString(json['width']),
+        pitboxes: JsonUtils.asString(json['pitboxes']),
+        year: JsonUtils.asInt(json['year']),
+        run: JsonUtils.asString(json['run']),
+        description: JsonUtils.asString(json['description']),
+        lengthKm: JsonUtils.asString(json['length_km']) ?? '-',
+        imageHash: JsonUtils.asString(json['image_hash']) ?? '',
+        createdAt: JsonUtils.asString(json['created_at']) ?? '',
+        updatedAt: JsonUtils.asString(json['updated_at']),
+        deletedAt: JsonUtils.asString(json['deleted_at']),
       );
 }

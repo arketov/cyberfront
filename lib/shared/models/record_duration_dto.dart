@@ -1,3 +1,4 @@
+import 'json_utils.dart';
 import 'participant_dto.dart';
 import 'track_dto.dart';
 
@@ -24,15 +25,15 @@ class RecordDurationDto {
 
   factory RecordDurationDto.fromJson(Map<String, dynamic> json) =>
       RecordDurationDto(
-        id: json['id'] as int,
-        durationHours: (json['duration_hours'] as num?)?.toDouble() ?? 0.0,
-        lapTime: (json['lap_time'] as num?)?.toDouble() ?? 0.0,
-        className: (json['class_name'] as String?) ?? '',
-        trackDuration: (json['track_duration'] as num?)?.toDouble() ?? 0.0,
+        id: JsonUtils.asInt(json['id']) ?? 0,
+        durationHours: JsonUtils.asDouble(json['duration_hours']) ?? 0.0,
+        lapTime: JsonUtils.asDouble(json['lap_time']) ?? 0.0,
+        className: JsonUtils.asString(json['class_name']) ?? '',
+        trackDuration: JsonUtils.asDouble(json['track_duration']) ?? 0.0,
         track: TrackDto.fromJson(json['track'] as Map<String, dynamic>),
         participants: (json['participants'] as List<dynamic>)
             .map((p) => ParticipantDto.fromJson(p as Map<String, dynamic>))
             .toList(),
-        createdAt: (json['created_at'] as String?) ?? '',
+        createdAt: JsonUtils.asString(json['created_at']) ?? '',
       );
 }

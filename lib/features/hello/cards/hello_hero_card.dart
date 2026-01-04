@@ -133,7 +133,7 @@ class HelloHeroCard extends CardBase {
                                 child: const Text('ОТКРЫТЬ РЕКОРДЫ'),
                               ),
                               OutlinedButton(
-                                onPressed: () {},
+                                onPressed: () => Navigator.of(context).pushNamed('/tracks'),
                                 style: secondaryBtnStyle,
                                 child: const Text('ТРАССЫ'),
                               ),

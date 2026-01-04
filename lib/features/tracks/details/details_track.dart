@@ -224,7 +224,7 @@ class _TrackDetailsCards extends StatelessWidget {
           PropTrackCard(
             width: _safeText(dto.width),
             pitboxes: _safeText(dto.pitboxes),
-            year: dto.year?.toString() ?? '-',
+            year: (dto.year == null || dto.year == 0) ? '—' : dto.year.toString(),
             run: _safeText(dto.run),
             tags: dto.tags,
             descr: dto.description,

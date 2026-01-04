@@ -1,25 +1,22 @@
-// lib/features/hello/cards/hello_hero_card.dart
+// lib/features/cars/details/cards/car_hello.dart
 import 'package:cyberdriver/core/ui/cards/card_base.dart';
 import 'package:cyberdriver/core/ui/widgets/kicker.dart';
 import 'package:cyberdriver/core/ui/widgets/track_meta_pills.dart';
-import 'package:cyberdriver/shared/countries_ru.dart';
 import 'package:flutter/material.dart';
 
-
-
-class HelloTrackCard extends CardBase {
-  const HelloTrackCard({
+class HelloCarCard extends CardBase {
+  const HelloCarCard({
     super.key,
     required this.name,
-    required this.countryCode,
-    required this.city,
-    required this.lengthKm,
+    required this.brand,
+    required this.carClass,
+    required this.pwratio,
   });
 
   final String name;
-  final String countryCode;
-  final String? city;
-  final String lengthKm;
+  final String brand;
+  final String? carClass;
+  final String? pwratio;
 
   @override
   EdgeInsetsGeometry get padding => EdgeInsets.zero;
@@ -27,17 +24,6 @@ class HelloTrackCard extends CardBase {
   @override
   Widget buildContent(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final secondaryBtnStyle = OutlinedButton.styleFrom(
-      backgroundColor: Colors.black.withValues(alpha: .33),
-      // затемнение/прозрачность
-      foregroundColor: Colors.white.withValues(alpha: .88),
-      side: BorderSide(color: Colors.grey.withValues(alpha: .25)),
-      overlayColor: Colors.white.withValues(alpha: .06),
-      // эффект нажатия/ховера
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      textStyle: const TextStyle(fontWeight: FontWeight.w900),
-    );
-
     const contentPadding = EdgeInsets.fromLTRB(18, 14, 18, 16);
 
     return ConstrainedBox(
@@ -73,7 +59,7 @@ class HelloTrackCard extends CardBase {
                     mainAxisSize:
                         hasBoundedHeight ? MainAxisSize.max : MainAxisSize.min,
                     children: [
-                      const Kicker('[ЭТО ТРЕК]'),
+                      const Kicker('[ЭТО МАШИНА]'),
                       const SizedBox(height: 8),
                       Text(
                         name,
@@ -91,16 +77,12 @@ class HelloTrackCard extends CardBase {
                         spacing: 10,
                         runSpacing: 10,
                         children: [
-                          MetaPill(
-                            label: countryCode.toUpperCase(),
-                            value: countryNameRu(countryCode).toUpperCase(),
-                          ),
-                          if (city != null && city!.trim().isNotEmpty)
-                            MetaPill(label: 'Город', value: city!.trim()),
-                          MetaPill(
-                            label: 'Длина',
-                            value: lengthKm,
-                          ),
+                          if (brand.trim().isNotEmpty)
+                            MetaPill(label: 'Бренд', value: brand.trim()),
+                          if (carClass != null && carClass!.trim().isNotEmpty)
+                            MetaPill(label: 'Класс', value: carClass!.trim()),
+                          if (pwratio != null && pwratio!.trim().isNotEmpty)
+                            MetaPill(label: 'P/W', value: pwratio!.trim()),
                         ],
                       ),
                     ],
