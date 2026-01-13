@@ -2,44 +2,23 @@
 library tracks_page;
 
 import 'dart:async';
-import 'dart:io';
 import 'dart:math';
 import 'package:cyberdriver/core/config/app_config.dart';
-import 'package:cyberdriver/core/media/media_cache_service.dart';
 import 'package:cyberdriver/core/network/network.dart';
 import 'package:cyberdriver/core/ui/widgets/cyber_dots_loader.dart';
-import 'package:cyberdriver/core/ui/widgets/kicker.dart';
 import 'package:cyberdriver/core/utils/logger.dart';
 import 'package:cyberdriver/features/tracks/data/tracks_api.dart';
-import 'package:cyberdriver/shared/countries_ru.dart';
 import 'package:cyberdriver/shared/models/track_dto.dart';
 import 'package:flutter/material.dart';
 
 import 'package:cyberdriver/core/navigation/app_section.dart';
 import 'package:cyberdriver/core/ui/base_page.dart';
 import 'package:cyberdriver/core/ui/widgets/infinite_ticker.dart';
-import 'package:cyberdriver/core/ui/cards/card_base.dart';
-part 'cards/controls.dart';
-part 'cards/track_card.dart';
+import 'cards/track_controls.dart';
+import 'cards/track_card.dart';
 
 
 TickerItem _choice(Random r, List<TickerItem> items) => items[r.nextInt(items.length)];
-
-@immutable
-class _TracksQuery {
-  const _TracksQuery({this.search = '', this.countryCode});
-  final String search;
-  final String? countryCode; // ISO alpha-2 (DE, IT...)
-
-  _TracksQuery copyWith({String? search, String? countryCode, bool clearCountry = false}) {
-    return _TracksQuery(
-      search: search ?? this.search,
-      countryCode: clearCountry ? null : (countryCode ?? this.countryCode),
-    );
-  }
-}
-
-final ValueNotifier<_TracksQuery> _q = ValueNotifier<_TracksQuery>(const _TracksQuery());
 
 class TracksPage extends BasePage {
   const TracksPage({super.key});
@@ -89,7 +68,7 @@ class TracksPage extends BasePage {
   /// фикс сверху
   @override
   List<Widget> buildTopBlocks(BuildContext context) => const [
-    _TracksControlsBlock(),
+    TracksControlsBlock(),
   ];
 
   /// список
@@ -101,96 +80,7 @@ class TracksPage extends BasePage {
 
 
 
-/// Выпадающий список (popup), НЕ bottom-sheet.
-class _CountryPopupField extends StatelessWidget {
-  const _CountryPopupField({
-    required this.value,
-    required this.onChanged,
-    required this.decoration,
-  });
-
-  final String? value;
-  final ValueChanged<String?> onChanged;
-  final InputDecoration decoration;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    final label = value == null ? 'Все страны' : countryNameRu(value!);
-
-    return PopupMenuButton<String>(
-      tooltip: '',
-      constraints: const BoxConstraints(maxHeight: 420, minWidth: 220),
-      position: PopupMenuPosition.under,
-      onSelected: (v) => onChanged(v.isEmpty ? null : v),
-      itemBuilder: (context) {
-        final items = <PopupMenuEntry<String>>[
-          CheckedPopupMenuItem<String>(
-            value: '',
-            checked: value == null,
-            child: const Text('Все страны'),
-          ),
-          const PopupMenuDivider(),
-        ];
-
-        for (final c in countriesRuSorted()) {
-          items.add(
-            CheckedPopupMenuItem<String>(
-              value: c.code,
-              checked: value?.toUpperCase() == c.code,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(c.nameRu),
-                  const SizedBox(height: 2),
-                  Text(
-                    c.code,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: cs.onSurface.withOpacity(0.55),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-        return items;
-      },
-      child: AbsorbPointer(
-        child: TextField(
-          readOnly: true,
-          decoration: decoration.copyWith(
-            hintText: label,
-            suffixIcon: const Icon(Icons.expand_more),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 /// -------------------- LIST --------------------
-
-class _TrackItem {
-  const _TrackItem({
-    required this.dto,
-    required this.id, // INT, но на UI НЕ показываем
-    required this.name,
-    required this.countryCode,
-    required this.lengthKm,
-    required this.mapImageId,
-  });
-
-  final int id;
-  final TrackDto dto;
-  final String name;
-  final String countryCode;
-  final String lengthKm;
-  final String mapImageId;
-}
 
 /// Статический список (как ты просил).
 class _TracksListBlock extends StatefulWidget {
@@ -204,7 +94,7 @@ class _TracksListBlockState extends State<_TracksListBlock> {
   static const double _itemExtent = 86.0;
   late final TracksApi _api;
 
-  final List<_TrackItem> _items = [];
+  final List<TrackItem> _items = [];
   bool _isLoadingInitial = false;
   bool _isLoadingMore = false;
   String? _error;
@@ -219,8 +109,8 @@ class _TracksListBlockState extends State<_TracksListBlock> {
     super.initState();
     final client = createApiClient(AppConfig.dev);
     _api = TracksApi(client);
-    _activeKey = _queryKey(_q.value);
-    _q.addListener(_onQueryChanged);
+    _activeKey = _queryKey(tracksQuery.value);
+    tracksQuery.addListener(_onQueryChanged);
     _loadNextPage();
   }
 
@@ -233,7 +123,7 @@ class _TracksListBlockState extends State<_TracksListBlock> {
   @override
   void dispose() {
     _scrollPosition?.removeListener(_handleScrollPosition);
-    _q.removeListener(_onQueryChanged);
+    tracksQuery.removeListener(_onQueryChanged);
     super.dispose();
   }
 
@@ -256,14 +146,14 @@ class _TracksListBlockState extends State<_TracksListBlock> {
     }
   }
 
-  String _queryKey(_TracksQuery q) {
+  String _queryKey(TracksQuery q) {
     final s = q.search.trim();
     final cc = q.countryCode?.trim().toUpperCase() ?? '';
     return 's=$s|cc=$cc';
   }
 
   void _onQueryChanged() {
-    final key = _queryKey(_q.value);
+    final key = _queryKey(tracksQuery.value);
     if (key == _activeKey) return;
     _activeKey = key;
     _resetAndLoad();
@@ -294,7 +184,7 @@ class _TracksListBlockState extends State<_TracksListBlock> {
     });
 
     final nextPage = _currentPage == 0 ? 1 : _currentPage + 1;
-    final q = _q.value;
+    final q = tracksQuery.value;
     final search = q.search.trim();
     final countryCode = q.countryCode?.trim().toUpperCase();
 
@@ -324,10 +214,10 @@ class _TracksListBlockState extends State<_TracksListBlock> {
     }
   }
 
-  List<_TrackItem> _mapItems(List<TrackDto> tracks) {
+  List<TrackItem> _mapItems(List<TrackDto> tracks) {
     return tracks
         .map(
-          (t) => _TrackItem(
+          (t) => TrackItem(
             dto: t,
             id: t.id,
             name: t.name,
@@ -388,7 +278,7 @@ class _TracksListBlockState extends State<_TracksListBlock> {
     return Column(
         children: [
           for (var i = 0; i < _items.length; i++) ...[
-            _TrackCard(item: _items[i]),
+            TrackCard(item: _items[i]),
             if (i != _items.length - 1) const SizedBox(height: 10),
           ],
           if (_isLoadingMore)

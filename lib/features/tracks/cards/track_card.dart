@@ -1,10 +1,35 @@
 // lib/features/tracks/cards/track_card.dart
-part of tracks_page;
+import 'dart:io';
+import 'dart:math';
 
-class _TrackCard extends CardBase {
-  const _TrackCard({required this.item});
+import 'package:cyberdriver/core/media/media_cache_service.dart';
+import 'package:cyberdriver/core/ui/cards/card_base.dart';
+import 'package:cyberdriver/shared/countries_ru.dart';
+import 'package:cyberdriver/shared/models/track_dto.dart';
+import 'package:flutter/material.dart';
 
-  final _TrackItem item;
+class TrackItem {
+  const TrackItem({
+    required this.dto,
+    required this.id, // INT, но на UI НЕ показываем
+    required this.name,
+    required this.countryCode,
+    required this.lengthKm,
+    required this.mapImageId,
+  });
+
+  final int id;
+  final TrackDto dto;
+  final String name;
+  final String countryCode;
+  final String lengthKm;
+  final String mapImageId;
+}
+
+class TrackCard extends CardBase {
+  const TrackCard({required this.item});
+
+  final TrackItem item;
 
   @override
   EdgeInsetsGeometry get padding => const EdgeInsets.fromLTRB(0, 0, 18, 0);
