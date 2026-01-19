@@ -13,6 +13,8 @@ import '../shared/models/track_dto.dart';
 import '../shared/models/car_dto.dart';
 
 class AppRouter {
+  static const String start = '/profile';
+
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     final name = settings.name ?? '';
     if (name.startsWith('/tracks/')) {

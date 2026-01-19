@@ -18,12 +18,27 @@ class UserDto {
     required this.imageHash,
   });
 
-  factory UserDto.fromJson(Map<String, dynamic> json) => UserDto(
-        id: JsonUtils.asInt(json['id']) ?? 0,
-        login: JsonUtils.asString(json['login']) ?? '',
-        name: JsonUtils.asString(json['name']) ?? '',
-        email: JsonUtils.asString(json['email']) ?? '',
-        role: RoleDto.fromJson(json['role'] as Map<String, dynamic>),
-        imageHash: JsonUtils.asString(json['image_hash']) ?? '',
-      );
+  factory UserDto.fromJson(Map<String, dynamic> json) {
+    final roleJson = json['role'];
+    final role = roleJson is Map<String, dynamic>
+        ? RoleDto.fromJson(roleJson)
+        : const RoleDto(id: 0, name: '');
+    return UserDto(
+      id: JsonUtils.asInt(json['id']) ?? 0,
+      login: JsonUtils.asString(json['login']) ?? '',
+      name: JsonUtils.asString(json['name']) ?? '',
+      email: JsonUtils.asString(json['email']) ?? '',
+      role: role,
+      imageHash: JsonUtils.asString(json['image_hash']) ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'login': login,
+        'name': name,
+        'email': email,
+        'role': role.toJson(),
+        'image_hash': imageHash,
+      };
 }

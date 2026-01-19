@@ -45,4 +45,10 @@ class MediaCacheService {
     final baseTrimmed = base.endsWith('/') ? base.substring(0, base.length - 1) : base;
     return '$baseTrimmed/api/${config.apiVersion}/images/$id';
   }
+
+  Future<void> clearAll() async {
+    for (final manager in _managers.values) {
+      await manager.emptyCache();
+    }
+  }
 }

@@ -13,4 +13,9 @@ class RoleDto {
         id: JsonUtils.asInt(json['id']) ?? 0,
         name: JsonUtils.asString(json['name']) ?? '',
       );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+      };
 }

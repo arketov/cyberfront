@@ -102,10 +102,9 @@ class RestApiClient {
       if (headers != null) ...headers,
     };
 
+    final encodedBody = _encodeBody(body, mergedHeaders);
     final request = http.Request(method.toUpperCase(), uri)
       ..headers.addAll(mergedHeaders);
-
-    final encodedBody = _encodeBody(body, mergedHeaders);
     if (encodedBody != null) {
       request.body = encodedBody;
     }
