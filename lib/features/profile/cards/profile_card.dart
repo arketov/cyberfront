@@ -12,7 +12,7 @@ import 'package:cyberdriver/shared/models/user_dto.dart';
 const double _avatarSize = 64.0;
 const Duration _cacheDuration = Duration(days: 1);
 
-class ProfileCard extends CardBase {
+class ProfileCard extends StatefulWidget {
   const ProfileCard({
     super.key,
     required this.user,
@@ -25,8 +25,42 @@ class ProfileCard extends CardBase {
   final AppConfig config;
 
   @override
-  Widget buildContent(BuildContext context) {
-    if (user == null) {
+  State<ProfileCard> createState() => _ProfileCardState();
+}
+
+class _ProfileCardState extends State<ProfileCard> {
+  bool _expanded = false;
+
+  static const _miniBlocks = [
+    SubCard(title: 'Хеллоу', value: "Дарова"),
+    SubCard(title: 'Хеллоу', value: "Дарова"),
+    SubCard(title: 'Хеллоу', value: "Дарова"),
+    SubCard(title: 'Хеллоу', value: "Дарова"),
+    SubCard(title: 'Хеллоу', value: "Дарова"),
+    SubCard(title: 'Хеллоу', value: "Дарова"),
+    SubCard(title: 'Хеллоу', value: "Дарова"),
+    SubCard(title: 'Хеллоу', value: "Дарова"),
+    SubCard(title: 'Хеллоу', value: "Дарова"),
+    SubCard(title: 'Хеллоу', value: "Дарова"),
+    SubCard(title: 'Хеллоу', value: "Дарова"),
+
+  ];
+
+  void _toggleExpanded() {
+    if (_miniBlocks.isEmpty) return;
+    setState(() => _expanded = !_expanded);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _ProfileCardShell(
+      onTapCallback: _toggleExpanded,
+      child: _buildContent(context),
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
+    if (widget.user == null) {
       return const Text('Нет данных пользователя');
     }
 
@@ -48,7 +82,8 @@ class ProfileCard extends CardBase {
       color: Colors.white.withValues(alpha: 0.68),
     );
 
-    final displayName = user!.name.isEmpty ? user!.login : user!.name;
+    final user = widget.user!;
+    final displayName = user.name.isEmpty ? user.login : user.name;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -59,9 +94,9 @@ class ProfileCard extends CardBase {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _ProfileAvatar(
-              imageHash: user!.imageHash,
-              mediaCache: mediaCache,
-              config: config,
+              imageHash: user.imageHash,
+              mediaCache: widget.mediaCache,
+              config: widget.config,
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -77,14 +112,14 @@ class ProfileCard extends CardBase {
                       children: [
                         _kv(
                           'LOGIN',
-                          user!.login,
+                          user.login,
                           metaLabelStyle,
                           metaValueStyle,
                         ),
                         _dot(metaLabelStyle),
                         _kv(
                           'EMAIL',
-                          user!.email,
+                          user.email,
                           metaLabelStyle,
                           metaValueStyle,
                         ),
@@ -112,9 +147,47 @@ class ProfileCard extends CardBase {
             // _StatItem('aga', 'ugu', SubCardTone.pink),
           ],
         ),
+        if (_miniBlocks.isNotEmpty) ...[
+          const SizedBox(height: 14),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints:
+                  _expanded ? const BoxConstraints() : const BoxConstraints(maxHeight: 0),
+              child: ClipRect(
+                child: Align(
+                  alignment: Alignment.topLeft,
+                  child: Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: _miniBlocks,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }
+}
+
+class _ProfileCardShell extends CardBase {
+  const _ProfileCardShell({
+    required this.child,
+    required this.onTapCallback,
+  });
+
+  final Widget child;
+  final VoidCallback onTapCallback;
+
+  @override
+  VoidCallback? onTap(BuildContext context) => onTapCallback;
+
+  @override
+  Widget buildContent(BuildContext context) => child;
 }
 
 class _StatItem {
@@ -221,6 +294,33 @@ TextSpan _kv(
 }
 
 TextSpan _dot(TextStyle? style) => TextSpan(text: ' • ', style: style);
+
+class _ProfileMiniBlock extends StatelessWidget {
+  const _ProfileMiniBlock({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.04),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.12), width: 1),
+      ),
+      child: Text(
+        label,
+        style: textTheme.labelSmall?.copyWith(
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.8,
+          color: Colors.white.withOpacity(0.72),
+        ),
+      ),
+    );
+  }
+}
 
 class _ProfileAvatar extends StatelessWidget {
   const _ProfileAvatar({

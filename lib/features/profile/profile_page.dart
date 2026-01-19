@@ -30,15 +30,15 @@ class ProfilePage extends BasePage {
     final r = Random();
     return <TickerItem>[
       _choice(r, const [
-        TickerItem('АНАЛОГОВЫЙ ПАС', accent: true),
-        TickerItem('АНАЛЬГИНОВЫЙ', accent: true),
-        TickerItem('ПРОФНАСТИЛ', accent: true),
+        TickerItem('АНАЛОГОВЫЙ ПАС',),
+        TickerItem('АНАЛЬГИНОВЫЙ',),
+        TickerItem('ПРОФНАСТИЛ',),
       ]),
       const TickerItem('КИБЕРВОДИЛА', accent: true),
       _choice(r, const [
-        TickerItem('ПОРТФЕЛЬ', accent: true),
-        TickerItem('АНКЕТА', accent: true),
-        TickerItem('МЕДКАРТА', accent: true),
+        TickerItem('ПОРТФЕЛЬ',),
+        TickerItem('АНКЕТА', ),
+        TickerItem('МЕДКАРТА',),
       ]),
       const TickerItem('КИБЕРВОДИЛА', accent: true),
       _choice(r, const [
@@ -50,9 +50,9 @@ class ProfilePage extends BasePage {
       ]),
       const TickerItem('КИБЕРВОДИЛА', accent: true),
       _choice(r, const [
-        TickerItem('СНЮС', accent: true),
-        TickerItem('ПАС', accent: true),
-        TickerItem('2FA', accent: true),
+        TickerItem('СНЮС',),
+        TickerItem('ПАС',),
+        TickerItem('2FA',),
       ]),
     ];
   }
@@ -191,6 +191,11 @@ class _LoginPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final errorStyle = textTheme.bodySmall?.copyWith(color: Colors.redAccent);
+    const miniBlocks = [
+      _LoginMiniBlock(label: 'ПИН'),
+      _LoginMiniBlock(label: 'ПАС'),
+      _LoginMiniBlock(label: '2FA'),
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -204,6 +209,7 @@ class _LoginPanel extends StatelessWidget {
         const Kicker('Кто ты, КиберВоин?'),
         const SizedBox(height: 22),
         LoginCard(
+          miniBlocks: miniBlocks,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -252,13 +258,105 @@ class _LoginPanel extends StatelessWidget {
   }
 }
 
-class LoginCard extends CardBase {
-  const LoginCard({super.key, required this.child});
+class LoginCard extends StatefulWidget {
+  const LoginCard({
+    super.key,
+    required this.child,
+    this.miniBlocks = const [],
+  });
 
   final Widget child;
+  final List<Widget> miniBlocks;
+
+  @override
+  State<LoginCard> createState() => _LoginCardState();
+}
+
+class _LoginCardState extends State<LoginCard> {
+  bool _expanded = false;
+
+  void _toggleExpanded() {
+    if (widget.miniBlocks.isEmpty) return;
+    setState(() => _expanded = !_expanded);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _LoginCardShell(
+      onTapCallback: widget.miniBlocks.isEmpty ? null : _toggleExpanded,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          widget.child,
+          if (widget.miniBlocks.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOutCubic,
+              alignment: Alignment.topCenter,
+              child: ConstrainedBox(
+                constraints:
+                    _expanded ? const BoxConstraints() : const BoxConstraints(maxHeight: 0),
+                child: ClipRect(
+                  child: Align(
+                    alignment: Alignment.topLeft,
+                    child: Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: widget.miniBlocks,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _LoginCardShell extends CardBase {
+  const _LoginCardShell({
+    required this.child,
+    this.onTapCallback,
+  });
+
+  final Widget child;
+  final VoidCallback? onTapCallback;
+
+  @override
+  VoidCallback? onTap(BuildContext context) => onTapCallback;
 
   @override
   Widget buildContent(BuildContext context) => child;
+}
+
+class _LoginMiniBlock extends StatelessWidget {
+  const _LoginMiniBlock({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.04),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.12), width: 1),
+      ),
+      child: Text(
+        label,
+        style: textTheme.labelSmall?.copyWith(
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.8,
+          color: Colors.white.withOpacity(0.72),
+        ),
+      ),
+    );
+  }
 }
 
 class _ProfileSummaryCard extends StatelessWidget {
