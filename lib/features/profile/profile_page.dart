@@ -1,6 +1,8 @@
 // lib/features/profile/profile_page.dart
 
 import 'dart:math';
+import 'package:cyberdriver/features/profile/cards/logout_card.dart';
+import 'package:cyberdriver/features/profile/cards/profile_card.dart';
 import 'package:flutter/material.dart';
 
 import 'package:cyberdriver/core/auth/auth_service.dart';
@@ -13,8 +15,6 @@ import 'package:cyberdriver/core/ui/widgets/cyber_dots_loader.dart';
 import 'package:cyberdriver/core/ui/widgets/infinite_ticker.dart';
 import 'package:cyberdriver/core/ui/widgets/kicker.dart';
 import 'package:cyberdriver/core/ui/widgets/logo.dart';
-import 'package:cyberdriver/core/features/profile/cards/logout_card.dart';
-import 'package:cyberdriver/core/features/profile/cards/profile_card.dart';
 import 'package:cyberdriver/shared/models/user_dto.dart';
 
 TickerItem _choice(Random r, List<TickerItem> items) => items[r.nextInt(items.length)];
