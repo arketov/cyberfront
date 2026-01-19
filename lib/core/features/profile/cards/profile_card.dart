@@ -8,6 +8,7 @@ import 'package:cyberdriver/core/ui/cards/card_base.dart';
 import 'package:cyberdriver/core/ui/widgets/kicker.dart';
 import 'package:cyberdriver/core/ui/widgets/sub_card.dart';
 import 'package:cyberdriver/shared/models/user_dto.dart';
+import 'package:cyberdriver/shared/models/user_stats_dto.dart';
 
 const double _avatarSize = 64.0;
 const Duration _cacheDuration = Duration(days: 1);
@@ -18,11 +19,13 @@ class ProfileCard extends StatefulWidget {
     required this.user,
     required this.mediaCache,
     required this.config,
+    this.statsLoader,
   });
 
   final UserDto? user;
   final MediaCacheService mediaCache;
   final AppConfig config;
+  final Future<UserStatsDto> Function()? statsLoader;
 
   @override
   State<ProfileCard> createState() => _ProfileCardState();
@@ -30,25 +33,39 @@ class ProfileCard extends StatefulWidget {
 
 class _ProfileCardState extends State<ProfileCard> {
   bool _expanded = false;
-
-  static const _miniBlocks = [
-    SubCard(title: 'Хеллоу', value: "Дарова"),
-    SubCard(title: 'Хеллоу', value: "Дарова"),
-    SubCard(title: 'Хеллоу', value: "Дарова"),
-    SubCard(title: 'Хеллоу', value: "Дарова"),
-    SubCard(title: 'Хеллоу', value: "Дарова"),
-    SubCard(title: 'Хеллоу', value: "Дарова"),
-    SubCard(title: 'Хеллоу', value: "Дарова"),
-    SubCard(title: 'Хеллоу', value: "Дарова"),
-    SubCard(title: 'Хеллоу', value: "Дарова"),
-    SubCard(title: 'Хеллоу', value: "Дарова"),
-    SubCard(title: 'Хеллоу', value: "Дарова"),
-
-  ];
+  bool _loading = false;
+  UserStatsDto? _stats;
+  String? _statsError;
 
   void _toggleExpanded() {
-    if (_miniBlocks.isEmpty) return;
-    setState(() => _expanded = !_expanded);
+    final next = !_expanded;
+    setState(() => _expanded = next);
+    if (next) {
+      _loadStats();
+    }
+  }
+
+  Future<void> _loadStats() async {
+    if (_loading || _stats != null) return;
+    final loader = widget.statsLoader;
+    if (loader == null) return;
+    setState(() {
+      _loading = true;
+      _statsError = null;
+    });
+
+    try {
+      final stats = await loader();
+      if (!mounted) return;
+      setState(() => _stats = stats);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _statsError = 'Ошибка статистики: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _loading = false);
+      }
+    }
   }
 
   @override
@@ -147,31 +164,71 @@ class _ProfileCardState extends State<ProfileCard> {
             // _StatItem('aga', 'ugu', SubCardTone.pink),
           ],
         ),
-        if (_miniBlocks.isNotEmpty) ...[
+        if (_expanded) ...[
           const SizedBox(height: 14),
-          AnimatedSize(
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeOutCubic,
-            alignment: Alignment.topCenter,
-            child: ConstrainedBox(
-              constraints:
-                  _expanded ? const BoxConstraints() : const BoxConstraints(maxHeight: 0),
-              child: ClipRect(
-                child: Align(
-                  alignment: Alignment.topLeft,
-                  child: Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: _miniBlocks,
-                  ),
-                ),
-              ),
-            ),
-          ),
+          _buildStatsBlock(context),
         ],
       ],
     );
   }
+
+  Widget _buildStatsBlock(BuildContext context) {
+    if (_loading) {
+      return const SizedBox(
+        height: 44,
+        child: Center(
+          child: SizedBox(
+            width: 18,
+            height: 18,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+      );
+    }
+    if (_statsError != null) {
+      return Text(
+        _statsError!,
+        style: Theme.of(context)
+            .textTheme
+            .bodySmall
+            ?.copyWith(color: Colors.redAccent),
+      );
+    }
+    final stats = _stats;
+    if (stats == null) {
+      return Text(
+        'Нет статистики',
+        style: Theme.of(context)
+            .textTheme
+            .bodySmall
+            ?.copyWith(color: Colors.white.withOpacity(0.6)),
+      );
+    }
+
+    final entries = stats.entries;
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: [
+        for (var i = 0; i < entries.length; i++)
+          SizedBox(
+            width: 150,
+            child: SubCard(
+              title: entries[i].key,
+              value: _formatValue(entries[i].value),
+              tone: i.isEven ? SubCardTone.pink : SubCardTone.blue,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+String _formatValue(num value) {
+  if (value % 1 == 0) {
+    return value.toInt().toString();
+  }
+  return value.toStringAsFixed(2);
 }
 
 class _ProfileCardShell extends CardBase {
@@ -294,33 +351,6 @@ TextSpan _kv(
 }
 
 TextSpan _dot(TextStyle? style) => TextSpan(text: ' • ', style: style);
-
-class _ProfileMiniBlock extends StatelessWidget {
-  const _ProfileMiniBlock({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.12), width: 1),
-      ),
-      child: Text(
-        label,
-        style: textTheme.labelSmall?.copyWith(
-          fontWeight: FontWeight.w800,
-          letterSpacing: 0.8,
-          color: Colors.white.withOpacity(0.72),
-        ),
-      ),
-    );
-  }
-}
 
 class _ProfileAvatar extends StatelessWidget {
   const _ProfileAvatar({

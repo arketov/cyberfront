@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cyberdriver/app/app_router.dart';
 import 'package:cyberdriver/core/auth/auth_service.dart';
 import 'package:cyberdriver/core/media/media_cache_service.dart';
+
 class LogoutCard extends StatelessWidget {
   const LogoutCard({super.key});
 

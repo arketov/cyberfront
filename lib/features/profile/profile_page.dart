@@ -1,21 +1,24 @@
 // lib/features/profile/profile_page.dart
 
 import 'dart:math';
-import 'package:cyberdriver/features/profile/cards/logout_card.dart';
-import 'package:cyberdriver/features/profile/cards/profile_card.dart';
 import 'package:flutter/material.dart';
 
 import 'package:cyberdriver/core/auth/auth_service.dart';
 import 'package:cyberdriver/core/config/app_config.dart';
+import 'package:cyberdriver/core/features/profile/cards/logout_card.dart';
+import 'package:cyberdriver/core/features/profile/cards/profile_card.dart';
 import 'package:cyberdriver/core/media/media_cache_service.dart';
 import 'package:cyberdriver/core/navigation/app_section.dart';
+import 'package:cyberdriver/core/network/api_client_provider.dart';
 import 'package:cyberdriver/core/ui/base_page.dart';
 import 'package:cyberdriver/core/ui/cards/card_base.dart';
 import 'package:cyberdriver/core/ui/widgets/cyber_dots_loader.dart';
 import 'package:cyberdriver/core/ui/widgets/infinite_ticker.dart';
 import 'package:cyberdriver/core/ui/widgets/kicker.dart';
 import 'package:cyberdriver/core/ui/widgets/logo.dart';
+import 'package:cyberdriver/features/profile/data/profile_stats_api.dart';
 import 'package:cyberdriver/shared/models/user_dto.dart';
+import 'package:cyberdriver/shared/models/user_stats_dto.dart';
 
 TickerItem _choice(Random r, List<TickerItem> items) => items[r.nextInt(items.length)];
 
@@ -131,6 +134,15 @@ class _ProfileGateState extends State<ProfileGate> {
     }
   }
 
+  Future<UserStatsDto> _loadStats() async {
+    final token = _auth?.session?.accessToken ?? '';
+    if (token.isEmpty) {
+      throw Exception('Missing token');
+    }
+    final api = ProfileStatsApi(createApiClient(AppConfig.dev));
+    return api.getStats(token);
+  }
+
   @override
   void dispose() {
     _loginController.dispose();
@@ -166,6 +178,7 @@ class _ProfileGateState extends State<ProfileGate> {
       user: session.user,
       mediaCache: MediaCacheService.instance,
       config: AppConfig.dev,
+      statsLoader: _loadStats,
     );
   }
 }
@@ -191,12 +204,6 @@ class _LoginPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final errorStyle = textTheme.bodySmall?.copyWith(color: Colors.redAccent);
-    const miniBlocks = [
-      _LoginMiniBlock(label: 'ПИН'),
-      _LoginMiniBlock(label: 'ПАС'),
-      _LoginMiniBlock(label: '2FA'),
-    ];
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -209,7 +216,6 @@ class _LoginPanel extends StatelessWidget {
         const Kicker('Кто ты, КиберВоин?'),
         const SizedBox(height: 22),
         LoginCard(
-          miniBlocks: miniBlocks,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -258,105 +264,13 @@ class _LoginPanel extends StatelessWidget {
   }
 }
 
-class LoginCard extends StatefulWidget {
-  const LoginCard({
-    super.key,
-    required this.child,
-    this.miniBlocks = const [],
-  });
+class LoginCard extends CardBase {
+  const LoginCard({super.key, required this.child});
 
   final Widget child;
-  final List<Widget> miniBlocks;
-
-  @override
-  State<LoginCard> createState() => _LoginCardState();
-}
-
-class _LoginCardState extends State<LoginCard> {
-  bool _expanded = false;
-
-  void _toggleExpanded() {
-    if (widget.miniBlocks.isEmpty) return;
-    setState(() => _expanded = !_expanded);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return _LoginCardShell(
-      onTapCallback: widget.miniBlocks.isEmpty ? null : _toggleExpanded,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          widget.child,
-          if (widget.miniBlocks.isNotEmpty) ...[
-            const SizedBox(height: 14),
-            AnimatedSize(
-              duration: const Duration(milliseconds: 220),
-              curve: Curves.easeOutCubic,
-              alignment: Alignment.topCenter,
-              child: ConstrainedBox(
-                constraints:
-                    _expanded ? const BoxConstraints() : const BoxConstraints(maxHeight: 0),
-                child: ClipRect(
-                  child: Align(
-                    alignment: Alignment.topLeft,
-                    child: Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: widget.miniBlocks,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _LoginCardShell extends CardBase {
-  const _LoginCardShell({
-    required this.child,
-    this.onTapCallback,
-  });
-
-  final Widget child;
-  final VoidCallback? onTapCallback;
-
-  @override
-  VoidCallback? onTap(BuildContext context) => onTapCallback;
 
   @override
   Widget buildContent(BuildContext context) => child;
-}
-
-class _LoginMiniBlock extends StatelessWidget {
-  const _LoginMiniBlock({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.12), width: 1),
-      ),
-      child: Text(
-        label,
-        style: textTheme.labelSmall?.copyWith(
-          fontWeight: FontWeight.w800,
-          letterSpacing: 0.8,
-          color: Colors.white.withOpacity(0.72),
-        ),
-      ),
-    );
-  }
 }
 
 class _ProfileSummaryCard extends StatelessWidget {
@@ -364,17 +278,24 @@ class _ProfileSummaryCard extends StatelessWidget {
     required this.user,
     required this.mediaCache,
     required this.config,
+    required this.statsLoader,
   });
 
   final UserDto user;
   final MediaCacheService mediaCache;
   final AppConfig config;
+  final Future<UserStatsDto> Function() statsLoader;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        ProfileCard(user: user, mediaCache: mediaCache, config: config),
+        ProfileCard(
+          user: user,
+          mediaCache: mediaCache,
+          config: config,
+          statsLoader: statsLoader,
+        ),
         const SizedBox(height: 12),
         const LogoutCard(),
       ],
