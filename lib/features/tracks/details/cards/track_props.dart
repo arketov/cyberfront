@@ -28,18 +28,6 @@ class PropTrackCard extends CardBase {
 
   @override
   Widget buildContent(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final secondaryBtnStyle = OutlinedButton.styleFrom(
-      backgroundColor: Colors.black.withValues(alpha: .33),
-      // затемнение/прозрачность
-      foregroundColor: Colors.white.withValues(alpha: .88),
-      side: BorderSide(color: Colors.grey.withValues(alpha: .25)),
-      overlayColor: Colors.white.withValues(alpha: .06),
-      // эффект нажатия/ховера
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      textStyle: const TextStyle(fontWeight: FontWeight.w900),
-    );
-
     const contentPadding = EdgeInsets.fromLTRB(18, 14, 18, 16);
 
     return ConstrainedBox(

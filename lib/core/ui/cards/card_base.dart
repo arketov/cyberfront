@@ -1,7 +1,6 @@
 // lib/features/hello/cards/card_base.dart
 import 'dart:math' as math;
 import 'package:cyberdriver/core/theme/app_theme.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 abstract class CardBase extends StatelessWidget {
@@ -53,8 +52,6 @@ abstract class CardBase extends StatelessWidget {
       stops.add(i / segments);
     }
 
-    final seed = Object.hash(runtimeType, key, identityHashCode(this));
-    final rnd = math.Random(seed);
     final rotation = (0.3 * 2 - 1) * 0.6;
 
     return SweepGradient(
@@ -88,7 +85,7 @@ abstract class CardBase extends StatelessWidget {
   }
 
   /// Цвет обводки, если borderGradient == null
-  Color borderColor(BuildContext context) => Colors.white.withOpacity(.12);
+  Color borderColor(BuildContext context) => Colors.white.withValues(alpha: .12);
 
   /// Внешняя тень (если надо).
   List<BoxShadow> shadows(BuildContext context) => const [];
@@ -149,7 +146,7 @@ abstract class CardBase extends StatelessWidget {
                             center: Alignment.topLeft,
                             stops: const [0.0, 0.5],
                             colors: [
-                              Colors.white.withOpacity(.12),
+                              Colors.white.withValues(alpha: .12),
                               Colors.transparent,
                             ],
                           ),
@@ -169,7 +166,7 @@ abstract class CardBase extends StatelessWidget {
                             stops: const [0, 1],
                             colors: [
                               Colors.transparent,
-                              Colors.black.withOpacity(.05),
+                              Colors.black.withValues(alpha: .05),
                             ],
                           ),
                         ),

@@ -2,7 +2,7 @@
 part of cars_page;
 
 TextStyle _bracketStyle(ColorScheme cs) => TextStyle(
-  color: Colors.white.withOpacity(0.9),
+  color: Colors.white.withValues(alpha: 0.9),
   fontSize: 26,
   fontWeight: FontWeight.w800,
   height: 1.0,
@@ -18,7 +18,7 @@ InputDecoration _controlDecoration(BuildContext context, {required String hint, 
     border: InputBorder.none,
     enabledBorder: InputBorder.none,
     focusedBorder: InputBorder.none,
-    hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
+    hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
   );
 }
 

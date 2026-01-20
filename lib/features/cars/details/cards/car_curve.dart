@@ -65,7 +65,7 @@ class CarCurveCard extends CardBase {
                     Text(
                       'Нет данных',
                       style: TextStyle(
-                        color: cs.onSurface.withOpacity(.75),
+                        color: cs.onSurface.withValues(alpha: .75),
                         fontWeight: FontWeight.w700,
                       ),
                     )
@@ -77,7 +77,7 @@ class CarCurveCard extends CardBase {
                         torque: torque,
                         powerColor: pal?.pink ?? cs.primary,
                         torqueColor: pal?.blue ?? cs.secondary,
-                        gridColor: pal?.line ?? cs.onSurface.withOpacity(0.12),
+                        gridColor: pal?.line ?? cs.onSurface.withValues(alpha: 0.12),
                       ),
                     ),
                 ],
@@ -103,7 +103,7 @@ class _CurveLegend extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final textStyle = TextStyle(
-      color: cs.onSurface.withOpacity(0.85),
+      color: cs.onSurface.withValues(alpha: 0.85),
       fontWeight: FontWeight.w700,
     );
 
@@ -168,7 +168,7 @@ class _CurveChart extends StatelessWidget {
               powerColor: powerColor,
               torqueColor: torqueColor,
               gridColor: gridColor,
-              labelColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.65),
+              labelColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65),
             ),
           ),
         );

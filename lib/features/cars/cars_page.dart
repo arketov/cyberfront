@@ -273,7 +273,7 @@ class _CarsListBlockState extends State<_CarsListBlock> {
 
   void _attachScrollPosition() {
     final scrollable = Scrollable.of(context);
-    final position = scrollable?.position;
+    final position = scrollable.position;
     if (position == _scrollPosition) return;
     _scrollPosition?.removeListener(_handleScrollPosition);
     _scrollPosition = position;
@@ -412,7 +412,7 @@ class _CarsListBlockState extends State<_CarsListBlock> {
             Text(
               _error!,
               style: TextStyle(
-                color: cs.onSurface.withOpacity(.75),
+                color: cs.onSurface.withValues(alpha: .75),
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -431,7 +431,7 @@ class _CarsListBlockState extends State<_CarsListBlock> {
         padding: const EdgeInsets.symmetric(vertical: 24),
         child: Text(
           'No cars found',
-          style: TextStyle(color: cs.onSurface.withOpacity(0.7)),
+          style: TextStyle(color: cs.onSurface.withValues(alpha: 0.7)),
         ),
       );
     }

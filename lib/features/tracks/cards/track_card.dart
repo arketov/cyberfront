@@ -27,7 +27,7 @@ class TrackItem {
 }
 
 class TrackCard extends CardBase {
-  const TrackCard({required this.item});
+  const TrackCard({super.key, required this.item});
 
   final TrackItem item;
 
@@ -46,19 +46,12 @@ class TrackCard extends CardBase {
   Widget buildContent(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    final kicker = TextStyle(
-      fontSize: 12,
-      fontWeight: FontWeight.w900,
-      letterSpacing: 1.0,
-      color: cs.onSurface.withOpacity(0.55),
-    );
-
     final title = TextStyle(
       fontSize: 18,
       fontWeight: FontWeight.w900,
       letterSpacing: -0.3,
       height: 1.05,
-      color: cs.onSurface.withOpacity(0.98),
+      color: cs.onSurface.withValues(alpha: 0.98),
     );
 
     return ConstrainedBox(
@@ -181,7 +174,7 @@ class _MapThumbState extends State<_MapThumb> {
               return Stack(
                 fit: StackFit.expand,
                 children: [
-                  // ColoredBox(color: cs.surface.withOpacity(0.04)),
+                  // ColoredBox(color: cs.surface.withValues(alpha: 0.04)),
 
                   Padding(
                     padding: const EdgeInsets.all(10), // чтобы не упиралось в края клипа
@@ -210,9 +203,9 @@ class _MapThumbState extends State<_MapThumb> {
 
   Widget _fallback(ColorScheme cs) {
     return Container(
-      color: cs.surface.withOpacity(0.35),
+      color: cs.surface.withValues(alpha: 0.35),
       alignment: Alignment.center,
-      child: Icon(Icons.map, color: cs.onSurface.withOpacity(0.35)),
+      child: Icon(Icons.map, color: cs.onSurface.withValues(alpha: 0.35)),
     );
   }
 }
@@ -235,7 +228,7 @@ class _Pill extends StatelessWidget {
       style: TextStyle(
         fontSize: 13,
         fontWeight: FontWeight.w800,
-        color: cs.onSurface.withOpacity(0.92),
+        color: cs.onSurface.withValues(alpha: 0.92),
       ),
     );
 
@@ -243,8 +236,8 @@ class _Pill extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: cs.onSurface.withOpacity(0.12)),
-        color: cs.surface.withOpacity(0.18),
+        border: Border.all(color: cs.onSurface.withValues(alpha: 0.12)),
+        color: cs.surface.withValues(alpha: 0.18),
       ),
       child: ellipsize
           ? t

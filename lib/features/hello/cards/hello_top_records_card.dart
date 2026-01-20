@@ -1,5 +1,4 @@
 //lib/features/hello/cards/hello_top_records_card.dart
-import 'package:cyberdriver/core/ui/widgets/duration_record_list.dart';
 import 'package:cyberdriver/core/ui/widgets/kicker.dart';
 import 'package:cyberdriver/core/ui/widgets/group_record_list.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +14,7 @@ class HelloTopRecordsCard extends CardBase {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Kicker('[ТОП РЕКОРДЫ]', color: cs.onSurface.withOpacity(.55)),
+        Kicker('[ТОП РЕКОРДЫ]', color: cs.onSurface.withValues(alpha: .55)),
         const SizedBox(height: 10),
         Text(
           'ГРУППОВЫЕ РЕКОРДЫ',

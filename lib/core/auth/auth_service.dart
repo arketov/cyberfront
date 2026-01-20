@@ -1,7 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:cyberdriver/core/config/app_config.dart';
-import 'package:cyberdriver/core/network/api_client_provider.dart';
 import 'package:cyberdriver/core/network/network.dart';
 
 import 'auth_session.dart';

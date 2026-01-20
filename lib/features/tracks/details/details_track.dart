@@ -179,7 +179,7 @@ class _TrackDetailsBodyState extends State<_TrackDetailsBody> {
                 Text(
                   'Failed to load track',
                   style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(.75),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .75),
                     fontWeight: FontWeight.w700,
                   ),
                 ),

@@ -232,7 +232,7 @@ class _CyberDotsLoaderState extends State<CyberDotsLoader>
 
     final msgStyle = widget.messageStyle ??
         Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: Colors.white.withOpacity(0.65),
+          color: Colors.white.withValues(alpha: 0.65),
           letterSpacing: 0.2,
         );
 

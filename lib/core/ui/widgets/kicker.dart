@@ -17,7 +17,7 @@ class Kicker extends StatelessWidget {
         fontSize: 11,
         fontWeight: FontWeight.w900,
         letterSpacing: 1.2,
-        color: color ?? cs.onSurface.withOpacity(.55),
+        color: color ?? cs.onSurface.withValues(alpha: .55),
       ),
     );
   }

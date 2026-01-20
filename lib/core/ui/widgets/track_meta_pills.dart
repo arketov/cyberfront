@@ -57,7 +57,7 @@ class MetaPill extends StatelessWidget {
       case MetaPillTone.blue:
         return _blueBg;
       case MetaPillTone.dark:
-        return Colors.black.withOpacity(0.45);
+        return Colors.black.withValues(alpha: 0.45);
     }
   }
 
@@ -68,7 +68,7 @@ class MetaPill extends StatelessWidget {
       case MetaPillTone.blue:
         return _blueStroke;
       case MetaPillTone.dark:
-        return Colors.white.withOpacity(0.10);
+        return Colors.white.withValues(alpha: 0.10);
     }
   }
 
@@ -103,7 +103,7 @@ class MetaPill extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: Colors.white.withOpacity(0.55),
+                  color: Colors.white.withValues(alpha: 0.55),
                   height: 1.0,
                 ),
               ),

@@ -201,7 +201,7 @@ class _ProfileCardState extends State<ProfileCard> {
         style: Theme.of(context)
             .textTheme
             .bodySmall
-            ?.copyWith(color: Colors.white.withOpacity(0.6)),
+            ?.copyWith(color: Colors.white.withValues(alpha: 0.6)),
       );
     }
 

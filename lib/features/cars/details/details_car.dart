@@ -189,7 +189,7 @@ class _CarDetailsBodyState extends State<_CarDetailsBody> {
                 Text(
                   'Failed to load car',
                   style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(.75),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .75),
                     fontWeight: FontWeight.w700,
                   ),
                 ),

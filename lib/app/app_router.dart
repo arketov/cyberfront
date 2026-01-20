@@ -2,15 +2,15 @@
 import 'package:flutter/material.dart';
 import 'no_transition_page_route.dart';
 
-import '../features/hello/hello_page.dart';
-import '../features/tracks/details/details_track.dart';
-import '../features/tracks/tracks_page.dart';
-import '../features/cars/cars_page.dart';
-import '../features/cars/details/details_car.dart';
-import '../features/records/records_page.dart';
-import '../features/profile/profile_page.dart';
-import '../shared/models/track_dto.dart';
-import '../shared/models/car_dto.dart';
+import 'package:cyberdriver/features/hello/hello_page.dart';
+import 'package:cyberdriver/features/tracks/details/details_track.dart';
+import 'package:cyberdriver/features/tracks/tracks_page.dart';
+import 'package:cyberdriver/features/cars/cars_page.dart';
+import 'package:cyberdriver/features/cars/details/details_car.dart';
+import 'package:cyberdriver/features/records/records_page.dart';
+import 'package:cyberdriver/features/profile/profile_page.dart';
+import 'package:cyberdriver/shared/models/track_dto.dart';
+import 'package:cyberdriver/shared/models/car_dto.dart';
 
 class AppRouter {
   static const String start = '/profile';

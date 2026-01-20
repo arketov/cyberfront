@@ -1,6 +1,4 @@
 // lib/features/tracks/tracks_page.dart
-library tracks_page;
-
 import 'dart:async';
 import 'dart:math';
 import 'package:cyberdriver/core/config/app_config.dart';
@@ -129,7 +127,7 @@ class _TracksListBlockState extends State<_TracksListBlock> {
 
   void _attachScrollPosition() {
     final scrollable = Scrollable.of(context);
-    final position = scrollable?.position;
+    final position = scrollable.position;
     if (position == _scrollPosition) return;
     _scrollPosition?.removeListener(_handleScrollPosition);
     _scrollPosition = position;
@@ -251,7 +249,7 @@ class _TracksListBlockState extends State<_TracksListBlock> {
             Text(
               _error!,
               style: TextStyle(
-                color: cs.onSurface.withOpacity(.75),
+                color: cs.onSurface.withValues(alpha: .75),
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -270,7 +268,7 @@ class _TracksListBlockState extends State<_TracksListBlock> {
         padding: const EdgeInsets.symmetric(vertical: 24),
         child: Text(
           'No tracks found',
-          style: TextStyle(color: cs.onSurface.withOpacity(0.7)),
+          style: TextStyle(color: cs.onSurface.withValues(alpha: 0.7)),
         ),
       );
     }

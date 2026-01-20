@@ -22,7 +22,7 @@ class HelloPriceCard extends CardBase {
       height: 1.25,
       fontSize: 13.2,
       fontWeight: FontWeight.w600,
-      color: Colors.white.withOpacity(.85),
+      color: Colors.white.withValues(alpha: .85),
     );
 
     Widget line(String left, String right) {

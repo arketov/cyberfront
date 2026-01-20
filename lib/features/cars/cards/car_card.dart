@@ -12,9 +12,9 @@ class _CarCard extends CardBase {
   @override
   VoidCallback? onTap(BuildContext context) {
     return () => Navigator.of(context).pushNamed(
-          '/cars/${item.id}',
-          arguments: item.dto,
-        );
+      '/cars/${item.id}',
+      arguments: item.dto,
+    );
   }
 
   @override
@@ -26,7 +26,7 @@ class _CarCard extends CardBase {
       fontWeight: FontWeight.w900,
       letterSpacing: -0.3,
       height: 1.05,
-      color: cs.onSurface.withOpacity(0.98),
+      color: cs.onSurface.withValues(alpha: 0.98),
     );
 
     return ConstrainedBox(
@@ -61,12 +61,6 @@ class _CarCard extends CardBase {
                     LayoutBuilder(
                       builder: (context, c) {
                         const pillSpacing = 8.0;
-                        const minCountryWidth = 90.0;
-                        final countryMaxWidth = max(
-                          minCountryWidth,
-                          c.maxWidth - 120,
-                        );
-
                         final pills = _buildPills(item);
 
                         return Wrap(
@@ -171,18 +165,17 @@ class _CarThumbState extends State<_CarThumb> {
 
   Widget _fallback(ColorScheme cs) {
     return Container(
-      color: cs.surface.withOpacity(0.35),
+      color: cs.surface.withValues(alpha: 0.35),
       alignment: Alignment.center,
-      child: Icon(Icons.directions_car, color: cs.onSurface.withOpacity(0.35)),
+      child: Icon(Icons.directions_car, color: cs.onSurface.withValues(alpha: 0.35)),
     );
   }
 }
 
 class _Pill extends StatelessWidget {
-  const _Pill({required this.text, this.ellipsize = false});
+  const _Pill({required this.text});
 
   final String text;
-  final bool ellipsize;
 
   @override
   Widget build(BuildContext context) {
@@ -191,12 +184,12 @@ class _Pill extends StatelessWidget {
     final t = Text(
       text,
       maxLines: 1,
-      overflow: ellipsize ? TextOverflow.ellipsis : TextOverflow.visible,
+      overflow: TextOverflow.visible,
       softWrap: false,
       style: TextStyle(
         fontSize: 13,
         fontWeight: FontWeight.w800,
-        color: cs.onSurface.withOpacity(0.92),
+        color: cs.onSurface.withValues(alpha: 0.92),
       ),
     );
 
@@ -204,16 +197,14 @@ class _Pill extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: cs.onSurface.withOpacity(0.12)),
-        color: cs.surface.withOpacity(0.18),
+        border: Border.all(color: cs.onSurface.withValues(alpha: 0.12)),
+        color: cs.surface.withValues(alpha: 0.18),
       ),
-      child: ellipsize
-          ? t
-          : FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: t,
-            ),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.centerLeft,
+        child: t,
+      ),
     );
   }
 }

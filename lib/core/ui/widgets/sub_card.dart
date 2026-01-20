@@ -79,9 +79,9 @@ class SubCard extends CardBase {
       end: Alignment.bottomRight,
       stops: const [0.0, 0.55, 1.0],
       colors: [
-        _stroke.withOpacity(.85),
-        _stroke.withOpacity(.35),
-        _stroke.withOpacity(.20),
+        _stroke.withValues(alpha: .85),
+        _stroke.withValues(alpha: .35),
+        _stroke.withValues(alpha: .20),
       ],
     );
   }
@@ -104,13 +104,13 @@ class SubCard extends CardBase {
   @override
   List<BoxShadow> shadows(BuildContext context) => [
     BoxShadow(
-      color: _stroke.withOpacity(.18),
+      color: _stroke.withValues(alpha: .18),
       blurRadius: 26,
       spreadRadius: -10,
       offset: const Offset(0, 14),
     ),
     BoxShadow(
-      color: Colors.black.withOpacity(.55),
+      color: Colors.black.withValues(alpha: .55),
       blurRadius: 22,
       spreadRadius: -14,
       offset: const Offset(0, 16),
@@ -119,7 +119,7 @@ class SubCard extends CardBase {
 
   @override
   Widget buildContent(BuildContext context) {
-    final lineColor = Colors.white.withOpacity(.30);
+    final lineColor = Colors.white.withValues(alpha: .30);
 
     return ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 40),

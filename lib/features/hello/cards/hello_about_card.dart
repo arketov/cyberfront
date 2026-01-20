@@ -43,11 +43,9 @@ class HelloAboutCard extends CardBase {
 class _ExpandableAboutText extends StatefulWidget {
   const _ExpandableAboutText({
     required this.text,
-    this.collapsedLines = 6,
   });
 
   final String text;
-  final int collapsedLines;
 
   @override
   State<_ExpandableAboutText> createState() => _ExpandableAboutTextState();
@@ -55,6 +53,7 @@ class _ExpandableAboutText extends StatefulWidget {
 
 class _ExpandableAboutTextState extends State<_ExpandableAboutText> {
   bool _expanded = false;
+  static const int _collapsedLines = 4;
 
   @override
   Widget build(BuildContext context) {
@@ -74,6 +73,8 @@ class _ExpandableAboutTextState extends State<_ExpandableAboutText> {
         _expanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
         firstChild: Text(
           widget.text,
+          maxLines: _collapsedLines,
+          overflow: TextOverflow.ellipsis,
           style: style,
         ),
         secondChild: Text(

@@ -150,7 +150,7 @@ class PropCarCard extends CardBase {
                         SizedBox(
                           width: double.infinity,
                           child: MetaPill(
-                            value: cleanDescr!.trim(),
+                            value: cleanDescr.trim(),
                             padding: const EdgeInsets.all(15),
                             radius: 20,
                             valueFontWeight: FontWeight.w400,

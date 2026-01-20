@@ -106,7 +106,7 @@ class _CarSkinsContentState extends State<_CarSkinsContent> {
                     return Text(
                       'Failed to load skins',
                       style: TextStyle(
-                        color: cs.onSurface.withOpacity(.75),
+                        color: cs.onSurface.withValues(alpha: .75),
                         fontWeight: FontWeight.w700,
                       ),
                     );
@@ -119,7 +119,7 @@ class _CarSkinsContentState extends State<_CarSkinsContent> {
                     return Text(
                       'No skins',
                       style: TextStyle(
-                        color: cs.onSurface.withOpacity(.75),
+                        color: cs.onSurface.withValues(alpha: .75),
                         fontWeight: FontWeight.w700,
                       ),
                     );
@@ -175,7 +175,7 @@ class _SkinImageCard extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: ColoredBox(
-        color: cs.surface.withOpacity(0.12),
+        color: cs.surface.withValues(alpha: 0.12),
         child: Padding(
           padding: const EdgeInsets.all(10),
           child: _SkinImage(hash: dto.imageHash),
@@ -234,9 +234,9 @@ class _SkinImageState extends State<_SkinImage> {
           );
         }
         return Container(
-          color: cs.surface.withOpacity(0.2),
+          color: cs.surface.withValues(alpha: 0.2),
           alignment: Alignment.center,
-          child: Icon(Icons.image, color: cs.onSurface.withOpacity(0.35)),
+          child: Icon(Icons.image, color: cs.onSurface.withValues(alpha: 0.35)),
         );
       },
     );
@@ -270,8 +270,8 @@ class _Dots extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: i == mappedIndex
-                  ? cs.primary.withOpacity(0.9)
-                  : cs.onSurface.withOpacity(0.25),
+                  ? cs.primary.withValues(alpha: 0.9)
+                  : cs.onSurface.withValues(alpha: 0.25),
             ),
           ),
         if (total > maxDots)
@@ -281,7 +281,7 @@ class _Dots extends StatelessWidget {
               '${safeCurrent + 1}/$total',
               style: TextStyle(
                 fontWeight: FontWeight.w700,
-                color: cs.onSurface.withOpacity(0.7),
+                color: cs.onSurface.withValues(alpha: 0.7),
               ),
             ),
           ),
@@ -304,7 +304,7 @@ class _SkinName extends StatelessWidget {
       value,
       style: TextStyle(
         fontWeight: FontWeight.w700,
-        color: cs.onSurface.withOpacity(0.85),
+        color: cs.onSurface.withValues(alpha: 0.85),
       ),
     );
   }

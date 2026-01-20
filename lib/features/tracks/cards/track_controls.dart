@@ -24,7 +24,7 @@ class TracksQuery {
 final ValueNotifier<TracksQuery> tracksQuery = ValueNotifier<TracksQuery>(const TracksQuery());
 
 TextStyle _bracketStyle(ColorScheme cs) => TextStyle(
-  color: Colors.white.withOpacity(0.9),
+  color: Colors.white.withValues(alpha: 0.9),
   fontSize: 26,
   fontWeight: FontWeight.w800,
   height: 1.0,
@@ -40,7 +40,7 @@ InputDecoration _controlDecoration(BuildContext context, {required String hint, 
     border: InputBorder.none,
     enabledBorder: InputBorder.none,
     focusedBorder: InputBorder.none,
-    hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
+    hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
   );
 }
 
@@ -113,7 +113,7 @@ class _CountryPopupField extends StatelessWidget {
                     c.code,
                     style: TextStyle(
                       fontSize: 12,
-                      color: cs.onSurface.withOpacity(0.55),
+                      color: cs.onSurface.withValues(alpha: 0.55),
                       fontWeight: FontWeight.w600,
                     ),
                   ),

@@ -95,7 +95,7 @@ class _PersonalRecordListState extends State<PersonalRecordList> {
                     Text(
                       'Не удалось загрузить топ рекордов',
                       style: TextStyle(
-                        color: cs.onSurface.withOpacity(.75),
+                        color: cs.onSurface.withValues(alpha: .75),
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -116,7 +116,7 @@ class _PersonalRecordListState extends State<PersonalRecordList> {
                 child: Text(
                   'Пока нет рекордов',
                   style: TextStyle(
-                    color: cs.onSurface.withOpacity(.65),
+                    color: cs.onSurface.withValues(alpha: .65),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -236,15 +236,15 @@ class PersonalRecordRow extends StatelessWidget {
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(radius),
-                color: cs.surface.withOpacity(0.10),
+                color: cs.surface.withValues(alpha: 0.10),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.55),
+                    color: Colors.black.withValues(alpha: 0.55),
                     blurRadius: 22,
                     offset: const Offset(0, 12),
                   ),
                   BoxShadow(
-                    color: Colors.white.withOpacity(0.04),
+                    color: Colors.white.withValues(alpha: 0.04),
                     blurRadius: 8,
                     offset: const Offset(0, -1),
                   ),
@@ -257,9 +257,9 @@ class PersonalRecordRow extends StatelessWidget {
                   end: Alignment(1, k),
                   colors: [
                     (accent ? const Color(0xFFFF2BD6) : Colors.white)
-                        .withOpacity(0.10),
-                    Colors.white.withOpacity(0.03),
-                    Colors.black.withOpacity(0.18),
+                        .withValues(alpha: 0.10),
+                    Colors.white.withValues(alpha: 0.03),
+                    Colors.black.withValues(alpha: 0.18),
                   ],
                   stops: const [0.0, 0.55, 1.0],
                 ),
@@ -293,7 +293,7 @@ class PersonalRecordRow extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 12.5,
                               fontWeight: FontWeight.w700,
-                              color: cs.onSurface.withOpacity(.55),
+                              color: cs.onSurface.withValues(alpha: .55),
                               height: 1.0,
                             ),
                           ),
@@ -309,7 +309,7 @@ class PersonalRecordRow extends StatelessWidget {
                           lapText,
                           style: TextStyle(
                             fontWeight: FontWeight.w900,
-                            color: cs.onSurface.withOpacity(.92),
+                            color: cs.onSurface.withValues(alpha: .92),
                             letterSpacing: 0.2,
                             height: 1.0,
                           ),
@@ -320,7 +320,7 @@ class PersonalRecordRow extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 12.5,
                             fontWeight: FontWeight.w700,
-                            color: cs.onSurface.withOpacity(.60),
+                            color: cs.onSurface.withValues(alpha: .60),
                             height: 1.0,
                           ),
                         ),
@@ -350,7 +350,7 @@ class PersonalRecordRow extends StatelessWidget {
     String two(int v) => v.toString().padLeft(2, '0');
 
     if (h > 0) {
-      return '${h}:${two(m)}:${two(s)}';
+      return '$h:${two(m)}:${two(s)}';
     }
     return '${two(m)}:${two(s)}';
   }

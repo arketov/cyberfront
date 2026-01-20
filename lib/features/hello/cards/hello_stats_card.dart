@@ -14,7 +14,6 @@ class HelloStatsCard extends CardBase {
 
   @override
   Widget buildContent(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
 
     Widget stat(String value, String label) {
       return Expanded(
