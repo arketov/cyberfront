@@ -3,6 +3,7 @@ import 'package:cyberdriver/core/config/app_config.dart';
 import 'package:cyberdriver/core/network/api_client_provider.dart';
 import 'package:cyberdriver/core/ui/cards/card_base.dart';
 import 'package:cyberdriver/core/ui/widgets/cyber_dots_loader.dart';
+import 'package:cyberdriver/core/ui/widgets/gradient_progress_bar.dart';
 import 'package:cyberdriver/core/ui/widgets/kicker.dart';
 import 'package:cyberdriver/features/profile/cards/widgets/favorite_run_card.dart';
 import 'package:cyberdriver/features/profile/cards/widgets/run_stats_block.dart';
@@ -85,10 +86,7 @@ class _UserRunStatState extends State<UserRunStat> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  TextButton(
-                    onPressed: _retry,
-                    child: const Text('Повторить'),
-                  ),
+                  TextButton(onPressed: _retry, child: const Text('Повторить')),
                 ],
               ),
             ),
@@ -155,9 +153,9 @@ class _UserRunStatState extends State<UserRunStat> {
                           label: 'Любимая машина',
                           onTap: favoriteCar != null && favoriteCar.id > 0
                               ? () => Navigator.of(context).pushNamed(
-                                    '/cars/${favoriteCar.id}',
-                                    arguments: favoriteCar,
-                                  )
+                                  '/cars/${favoriteCar.id}',
+                                  arguments: favoriteCar,
+                                )
                               : null,
                         ),
                         const SizedBox(height: 10),
@@ -171,9 +169,9 @@ class _UserRunStatState extends State<UserRunStat> {
                           fadeStops: const [0.0, 0.7, 1.0],
                           onTap: favoriteTrack != null && favoriteTrack.id > 0
                               ? () => Navigator.of(context).pushNamed(
-                                    '/tracks/${favoriteTrack.id}',
-                                    arguments: favoriteTrack,
-                                  )
+                                  '/tracks/${favoriteTrack.id}',
+                                  arguments: favoriteTrack,
+                                )
                               : null,
                         ),
                       ],
@@ -205,7 +203,76 @@ class _UserRunStatState extends State<UserRunStat> {
               ),
               if (_expanded) ...[
                 const SizedBox(height: 12),
-                const Text('expanded placeholder'),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(8, 10, 12, 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.04),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.12),
+                          width: 1,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Охват'),
+                          SizedBox(height: 10),
+                          Row(
+                            children: const [
+                              Text('Машины',),
+                              SizedBox(width: 8),
+                              Expanded(child: GradientProgressBar(value: 50)),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            children: const [
+                              Text('Трассы'),
+                              SizedBox(width: 8),
+                              Expanded(child: GradientProgressBar(value: 50)),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(8, 10, 12, 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.04),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.12),
+                          width: 1,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text('Cредние'),
+                          SizedBox(height: 10),
+                          Row(
+                            children: [
+                              Text('На машине'),
+                              Text('300 км • 1 час 20 минут'),
+                            ],
+                          ),
+                          SizedBox(height: 10),
+                          Row(
+                            children: [
+                              Text('На трассе'),
+                              Text('300 км • 1 час 20 минут'),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ],
               SizedBox(height: _expanded ? 12 : 12),
               Center(
