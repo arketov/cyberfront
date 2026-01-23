@@ -21,7 +21,7 @@ class StatDonut extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = Theme.of(context).extension<AppPalette>();
-    final accent = palette?.pink ?? Colors.white;
+    final accent = palette?.pink ?? Colors.white;//Color(0xFF1557FF); //palette?.pink ?? Colors.white;
     final muted = palette?.line ?? Colors.white.withValues(alpha: 0.2);
     final clamped = value.clamp(minValue, maxValue);
     final percent = ((clamped / maxValue) * 100).round();

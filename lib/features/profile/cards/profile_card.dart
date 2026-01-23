@@ -10,6 +10,7 @@ import 'package:cyberdriver/core/ui/widgets/stat_donut.dart';
 import 'package:cyberdriver/core/ui/widgets/sub_card.dart';
 import 'package:cyberdriver/shared/models/user_dto.dart';
 import 'package:cyberdriver/shared/models/user_stats_dto.dart';
+import 'package:cyberdriver/shared/stats_descripton.dart';
 
 const double _avatarSize = 64.0;
 const Duration _cacheDuration = Duration(days: 1);
@@ -200,64 +201,96 @@ class _ProfileCardState extends State<ProfileCard> {
       );
     }
 
-    final summaryItems = <_StatItem>[
-      _StatItem('TOTAL DURATION', _formatValue(stats.totalDuration), SubCardTone.pink),
-      _StatItem('TOTAL DISTANCE', _formatValue(stats.totalDistanse), SubCardTone.blue),
-      _StatItem('AVERAGE SPEED', _formatValue(stats.averageSpeed), SubCardTone.pink),
-    ];
-
-    final donutItems = <_DonutItem>[
-      _DonutItem('CAREFUNESS', stats.carefuness),
-      _DonutItem('SMOOF HANDS', stats.smoofhands),
-      _DonutItem('SMOOF FEET', stats.smooffeet),
-      _DonutItem('BRAKE THRESH', stats.braketheshold),
-      _DonutItem('TRAIL BRAKE', stats.trailbrake),
-      _DonutItem('THROTTLE', stats.throttlecontrol),
-      _DonutItem('CORNER BAL', stats.cornerbalance),
-      _DonutItem('TRACK LIMIT', stats.tracklimit),
-      _DonutItem('RECOVERY', stats.recovery),
-      _DonutItem('TYRE SYMP', stats.tyresympathy),
-      _DonutItem('KERB STYLE', stats.kerbstyle),
-      _DonutItem('CONSIST', stats.consistency),
-      _DonutItem('ABS', stats.absenabled),
-      _DonutItem('TC', stats.tcenabled),
-      _DonutItem('AUTO SHIFT', stats.autoshift),
+    final donutWidgets = <Widget>[
+      StatDonut(
+        label: 'КИБЕРНУТОСТЬ',
+        value: stats.carefuness.round(),
+        tooltipText: StatsDescriptions.carefuness,
+      ),
+      StatDonut(
+        label: 'ГЛАДКИЕ РУЧКИ',
+        value: stats.smoofhands.round(),
+        tooltipText: StatsDescriptions.smoofhands,
+      ),
+      StatDonut(
+        label: 'ГЛАДКИЕ НОЖКИ',
+        value: stats.smooffeet.round(),
+        tooltipText: StatsDescriptions.smooffeet,
+      ),
+      StatDonut(
+        label: 'ЧЁТКИЙ ТОРМОЗ',
+        value: stats.braketheshold.round(),
+        tooltipText: StatsDescriptions.braketheshold,
+      ),
+      StatDonut(
+        label: 'ПОВОРОТНЫЙ ТОРМОЗ',
+        value: stats.trailbrake.round(),
+        tooltipText: StatsDescriptions.trailbrake,
+      ),
+      StatDonut(
+        label: 'ЧЁТКИЙ ГАЗ',
+        value: stats.throttlecontrol.round(),
+        tooltipText: StatsDescriptions.throttlecontrol,
+      ),
+      StatDonut(
+        label: 'ПОВОРОТНЫЙ МАСТЕР',
+        value: stats.cornerbalance.round(),
+        tooltipText: StatsDescriptions.cornerbalance,
+      ),
+      StatDonut(
+        label: 'ЧИСТОТА ТРЕКА',
+        value: stats.tracklimit.round(),
+        tooltipText: StatsDescriptions.tracklimit,
+      ),
+      StatDonut(
+        label: 'КОНТРАВАРИЙКА',
+        value: stats.recovery.round(),
+        tooltipText: StatsDescriptions.recovery,
+      ),
+      StatDonut(
+        label: 'СИМПАТИЯ К ШИНАМ',
+        value: stats.tyresympathy.round(),
+        tooltipText: StatsDescriptions.tyresympathy,
+      ),
+      StatDonut(
+        label: 'СТИЛЬ ПАРЕБРИК',
+        value: stats.kerbstyle.round(),
+        tooltipText: StatsDescriptions.kerbstyle,
+      ),
+      StatDonut(
+        label: 'СТАБИЛЬНОСТЬ',
+        value: stats.consistency.round(),
+        tooltipText: StatsDescriptions.consistency,
+      ),
+      StatDonut(
+        label: 'АБС',
+        value: stats.absenabled.round(),
+        tooltipText: StatsDescriptions.absenabled,
+      ),
+      StatDonut(
+        label: 'ТРЕКШН',
+        value: stats.tcenabled.round(),
+        tooltipText: StatsDescriptions.tcenabled,
+      ),
+      StatDonut(
+        label: 'АВТОМАТ',
+        value: stats.autoshift.round(),
+        tooltipText: StatsDescriptions.autoshift,
+      ),
     ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _StretchWrap(
-          minItemWidth: 150,
-          spacing: 12,
-          runSpacing: 12,
-          itemCount: summaryItems.length,
-          itemBuilder: (itemWidth, index) {
-            final item = summaryItems[index];
-            return SizedBox(
-              width: itemWidth,
-              child: SubCard(
-                title: item.title,
-                value: item.value,
-                tone: item.tone,
-              ),
-            );
-          },
-        ),
-        const SizedBox(height: 14),
-        _StretchWrap(
           minItemWidth: 90,
           spacing: 14,
           runSpacing: 12,
-          itemCount: donutItems.length,
+          itemCount: donutWidgets.length,
           itemBuilder: (itemWidth, index) {
-            final item = donutItems[index];
             return SizedBox(
               width: itemWidth,
-              child: StatDonut(
-                label: item.label,
-                value: item.value.round(),
-              ),
+              child: donutWidgets[index],
             );
           },
         ),
@@ -295,13 +328,6 @@ class _StatItem {
   final String title;
   final String value;
   final SubCardTone tone;
-}
-
-class _DonutItem {
-  const _DonutItem(this.label, this.value);
-
-  final String label;
-  final double value;
 }
 
 class _StretchWrap extends StatelessWidget {
