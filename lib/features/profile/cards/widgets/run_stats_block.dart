@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:cyberdriver/shared/formatters/run_stats_format.dart';
+
 class RunStatsBlock extends StatelessWidget {
   const RunStatsBlock({
     super.key,
@@ -51,7 +53,10 @@ class RunStatsBlock extends StatelessWidget {
                 child: Text.rich(
                   TextSpan(
                     children: [
-                      TextSpan(text: _formatDistance(distanceMeters), style: statValueStyle),
+                      TextSpan(
+                        text: RunStatsFormat.distanceKmValue(distanceMeters),
+                        style: statValueStyle,
+                      ),
                       TextSpan(text: ' ', style: statValueStyle),
                       TextSpan(text: 'км', style: unitStyle),
                     ],
@@ -71,10 +76,16 @@ class RunStatsBlock extends StatelessWidget {
                 child: Text.rich(
                   TextSpan(
                     children: [
-                      TextSpan(text: _formatHours(durationMinutes), style: statValueStyle),
+                      TextSpan(
+                        text: RunStatsFormat.durationHours(durationMinutes),
+                        style: statValueStyle,
+                      ),
                       TextSpan(text: 'ч', style: unitStyle),
                       TextSpan(text: ' ', style: statValueStyle),
-                      TextSpan(text: _formatMinutes(durationMinutes), style: statValueStyle),
+                      TextSpan(
+                        text: RunStatsFormat.durationMinutes(durationMinutes),
+                        style: statValueStyle,
+                      ),
                       TextSpan(text: 'м', style: unitStyle),
                     ],
                   ),
@@ -107,18 +118,5 @@ class RunStatsBlock extends StatelessWidget {
     );
   }
 
-  static String _formatDistance(int meters) {
-    final km = meters / 1000.0;
-    return km.toStringAsFixed(1);
-  }
-
-  static String _formatHours(int minutes) {
-    final hours = minutes <= 0 ? 0 : minutes ~/ 60;
-    return hours.toString();
-  }
-
-  static String _formatMinutes(int minutes) {
-    final mins = minutes <= 0 ? 0 : minutes % 60;
-    return mins.toString().padLeft(2, '0');
-  }
+  // Formatting helpers moved to RunStatsFormat.
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:cyberdriver/shared/formatters/run_stats_format.dart';
+
 class AverageStatsBlock extends StatelessWidget {
   const AverageStatsBlock({
     super.key,
@@ -66,20 +68,8 @@ class AverageStatsBlock extends StatelessWidget {
   }
 
   static String _formatSummary(int meters, int minutes) {
-    return '${_formatDistance(meters)} • ${_formatDuration(minutes)}';
-  }
-
-  static String _formatDistance(int meters) {
-    final km = meters / 1000.0;
-    return '${km.toStringAsFixed(1)} км';
-  }
-
-  static String _formatDuration(int minutes) {
-    if (minutes <= 0) return '0 м';
-    final hours = minutes ~/ 60;
-    final mins = minutes % 60;
-    if (hours <= 0) return '$mins м';
-    return '$hours ч $mins м';
+    return '${RunStatsFormat.distanceKmLabel(meters)} • '
+        '${RunStatsFormat.durationLong(minutes)}';
   }
 }
 

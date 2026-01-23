@@ -9,6 +9,7 @@ import 'package:cyberdriver/features/profile/cards/widgets/favorite_run_card.dar
 import 'package:cyberdriver/features/profile/cards/widgets/coverage_stats_block.dart';
 import 'package:cyberdriver/features/profile/cards/widgets/run_stats_block.dart';
 import 'package:cyberdriver/features/profile/data/user_run_stats_api.dart';
+import 'package:cyberdriver/shared/models/user_run_stats_extend_dto.dart';
 import 'package:cyberdriver/shared/models/user_run_stats_dto.dart';
 import 'package:flutter/material.dart';
 
@@ -23,6 +24,9 @@ class _UserRunStatState extends State<UserRunStat> {
   bool _expanded = false;
   late final UserRunStatsApi _api;
   late Future<UserRunStatsDto> _future;
+  bool _extendLoading = false;
+  UserRunStatsExtendDto? _extendStats;
+  String? _extendError;
 
   @override
   void initState() {
@@ -32,7 +36,11 @@ class _UserRunStatState extends State<UserRunStat> {
   }
 
   void _toggleExpanded() {
-    setState(() => _expanded = !_expanded);
+    final next = !_expanded;
+    setState(() => _expanded = next);
+    if (next) {
+      _loadExtendStats();
+    }
   }
 
   Future<UserRunStatsDto> _loadStats() async {
@@ -43,6 +51,29 @@ class _UserRunStatState extends State<UserRunStat> {
 
   void _retry() {
     setState(() => _future = _loadStats());
+  }
+
+  Future<void> _loadExtendStats() async {
+    if (_extendLoading || _extendStats != null) return;
+    setState(() {
+      _extendLoading = true;
+      _extendError = null;
+    });
+
+    try {
+      final auth = await AuthService.getInstance();
+      await auth.loadSession();
+      final stats = await _api.getRunStatsExtendWithAuth(auth);
+      if (!mounted) return;
+      setState(() => _extendStats = stats);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _extendError = 'Ошибка статистики: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _extendLoading = false);
+      }
+    }
   }
 
   @override
@@ -202,22 +233,61 @@ class _UserRunStatState extends State<UserRunStat> {
               ),
               if (_expanded) ...[
                 const SizedBox(height: 12),
+                if (_extendLoading)
+                  const SizedBox(
+                    height: 44,
+                    child: Center(
+                      child: SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ),
+                  )
+                else if (_extendError != null)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _extendError!,
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(color: Colors.redAccent),
+                      ),
+                      const SizedBox(height: 6),
+                      TextButton(
+                        onPressed: _loadExtendStats,
+                        child: const Text('Повторить'),
+                      ),
+                    ],
+                  )
+                else if (_extendStats == null)
+                  Text(
+                    'Нет статистики',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(color: Colors.white.withValues(alpha: 0.6)),
+                  )
+                else
                 LayoutBuilder(
                   builder: (context, constraints) {
+                    final extend = _extendStats!;
                     final maxWidth = constraints.maxWidth;
                     final isNarrow = maxWidth < 560;
                     final itemWidth = isNarrow ? maxWidth : (maxWidth - 10) / 2;
                     final coverageCard = CoverageStatsBlock(
-                      carCount: 12,
-                      carTotal: 1985,
-                      trackCount: 10,
-                      trackTotal: 325,
+                      carCount: extend.carsWithRuns,
+                      carTotal: extend.carsTotal,
+                      trackCount: extend.tracksWithRuns,
+                      trackTotal: extend.tracksTotal,
                     );
-                    const averagesCard = AverageStatsBlock(
-                      carMeters: 300000,
-                      carDuration: 80,
-                      trackMeters: 200000,
-                      trackDuration: 124,
+                    final averagesCard = AverageStatsBlock(
+                      carMeters: extend.avgCarMeters,
+                      carDuration: extend.avgCarMinutes,
+                      trackMeters: extend.avgTrackMeters,
+                      trackDuration: extend.avgTrackMinutes,
                     );
 
                     if (isNarrow) {
@@ -237,7 +307,7 @@ class _UserRunStatState extends State<UserRunStat> {
                         children: [
                           Expanded(child: coverageCard),
                           const SizedBox(width: 10),
-                          const Expanded(child: averagesCard),
+                          Expanded(child: averagesCard),
                         ],
                       ),
                     );
