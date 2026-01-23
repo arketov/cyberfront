@@ -1,13 +1,12 @@
 // lib/features/profile/profile_page.dart
 
 import 'dart:math';
+import 'package:cyberdriver/features/profile/cards/logout_card.dart';
+import 'package:cyberdriver/features/profile/cards/profile_card.dart';
 import 'package:flutter/material.dart';
 
 import 'package:cyberdriver/core/auth/auth_service.dart';
 import 'package:cyberdriver/core/config/app_config.dart';
-import 'package:cyberdriver/core/features/profile/cards/logout_card.dart';
-import 'package:cyberdriver/core/features/profile/cards/profile_card.dart';
-import 'package:cyberdriver/core/media/media_cache_service.dart';
 import 'package:cyberdriver/core/navigation/app_section.dart';
 import 'package:cyberdriver/core/network/api_client_provider.dart';
 import 'package:cyberdriver/core/ui/base_page.dart';
@@ -17,7 +16,6 @@ import 'package:cyberdriver/core/ui/widgets/infinite_ticker.dart';
 import 'package:cyberdriver/core/ui/widgets/kicker.dart';
 import 'package:cyberdriver/core/ui/widgets/logo.dart';
 import 'package:cyberdriver/features/profile/data/profile_stats_api.dart';
-import 'package:cyberdriver/shared/models/user_dto.dart';
 import 'package:cyberdriver/shared/models/user_stats_dto.dart';
 
 TickerItem _choice(Random r, List<TickerItem> items) => items[r.nextInt(items.length)];
@@ -174,11 +172,15 @@ class _ProfileGateState extends State<ProfileGate> {
       );
     }
 
-    return _ProfileSummaryCard(
-      user: session.user,
-      mediaCache: MediaCacheService.instance,
-      config: AppConfig.dev,
-      statsLoader: _loadStats,
+    return Column(
+      children: [
+        ProfileCard(
+          user: session.user,
+          statsLoader: _loadStats,
+        ),
+        const SizedBox(height: 12),
+        const LogoutCard(),
+      ],
     );
   }
 }
@@ -271,34 +273,4 @@ class LoginCard extends CardBase {
 
   @override
   Widget buildContent(BuildContext context) => child;
-}
-
-class _ProfileSummaryCard extends StatelessWidget {
-  const _ProfileSummaryCard({
-    required this.user,
-    required this.mediaCache,
-    required this.config,
-    required this.statsLoader,
-  });
-
-  final UserDto user;
-  final MediaCacheService mediaCache;
-  final AppConfig config;
-  final Future<UserStatsDto> Function() statsLoader;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        ProfileCard(
-          user: user,
-          mediaCache: mediaCache,
-          config: config,
-          statsLoader: statsLoader,
-        ),
-        const SizedBox(height: 12),
-        const LogoutCard(),
-      ],
-    );
-  }
 }

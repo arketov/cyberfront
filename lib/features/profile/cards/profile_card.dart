@@ -17,14 +17,10 @@ class ProfileCard extends StatefulWidget {
   const ProfileCard({
     super.key,
     required this.user,
-    required this.mediaCache,
-    required this.config,
     this.statsLoader,
   });
 
   final UserDto? user;
-  final MediaCacheService mediaCache;
-  final AppConfig config;
   final Future<UserStatsDto> Function()? statsLoader;
 
   @override
@@ -112,8 +108,6 @@ class _ProfileCardState extends State<ProfileCard> {
           children: [
             _ProfileAvatar(
               imageHash: user.imageHash,
-              mediaCache: widget.mediaCache,
-              config: widget.config,
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -355,13 +349,9 @@ TextSpan _dot(TextStyle? style) => TextSpan(text: ' • ', style: style);
 class _ProfileAvatar extends StatelessWidget {
   const _ProfileAvatar({
     required this.imageHash,
-    required this.mediaCache,
-    required this.config,
   });
 
   final String imageHash;
-  final MediaCacheService mediaCache;
-  final AppConfig config;
 
   @override
   Widget build(BuildContext context) {
@@ -384,10 +374,10 @@ class _ProfileAvatar extends StatelessWidget {
     }
 
     return FutureBuilder<File>(
-      future: mediaCache.getImageFile(
+      future: MediaCacheService.instance.getImageFile(
         id: imageHash,
         cacheDuration: _cacheDuration,
-        config: config,
+        config: AppConfig.dev,
       ),
       builder: (context, snapshot) {
         final file = snapshot.data;
