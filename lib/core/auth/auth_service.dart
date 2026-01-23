@@ -1,7 +1,6 @@
-import 'package:shared_preferences/shared_preferences.dart';
-
 import 'package:cyberdriver/core/config/app_config.dart';
 import 'package:cyberdriver/core/network/network.dart';
+import 'package:cyberdriver/core/utils/logger.dart';
 
 import 'auth_session.dart';
 import 'auth_storage.dart';
@@ -13,8 +12,7 @@ class AuthService {
 
   static Future<AuthService> getInstance() async {
     if (_instance != null) return _instance!;
-    final prefs = await SharedPreferences.getInstance();
-    final storage = AuthStorage(prefs);
+    final storage = AuthStorage();
     final client = createApiClient(AppConfig.dev);
     _instance = AuthService._(client, storage);
     return _instance!;
@@ -29,7 +27,7 @@ class AuthService {
   bool get isLoggedIn => _session != null;
 
   Future<void> loadSession() async {
-    _session = _storage.readSession();
+    _session = await _storage.readSession();
   }
 
   Future<AuthSession> login({
@@ -50,7 +48,8 @@ class AuthService {
   }
 
   Future<AuthSession> refresh() async {
-    final token = _session?.accessToken ?? _storage.readSession()?.accessToken;
+    final stored = await _storage.readSession();
+    final token = _session?.accessToken ?? stored?.accessToken;
     if (token == null || token.isEmpty) {
       throw ApiException(statusCode: 401, message: 'Missing token');
     }
@@ -66,13 +65,43 @@ class AuthService {
     return _session!;
   }
 
+  Future<T> withAuth<T>(Future<T> Function(String token) action) async {
+    final stored = await _storage.readSession();
+    final token = _session?.accessToken ?? stored?.accessToken;
+    if (token == null || token.isEmpty) {
+      throw ApiException(statusCode: 401, message: 'Missing token');
+    }
+
+    try {
+      return await action(token);
+    } on ApiException catch (error) {
+      if (error.statusCode != 401) {
+        rethrow;
+      }
+    }
+
+    try {
+      final refreshed = await refresh();
+      return await action(refreshed.accessToken);
+    } catch (error, stackTrace) {
+      logger.severe('Auth refresh failed', error, stackTrace);
+      await logout();
+      rethrow;
+    }
+  }
+
   Future<void> logout() async {
-    final token = _session?.accessToken ?? _storage.readSession()?.accessToken;
+    final stored = await _storage.readSession();
+    final token = _session?.accessToken ?? stored?.accessToken;
     if (token != null && token.isNotEmpty) {
-      await _client.post<Map<String, dynamic>>(
-        'auth/logout',
-        headers: {'Authorization': 'Bearer $token'},
-      );
+      try {
+        await _client.post<Map<String, dynamic>>(
+          'auth/logout',
+          headers: {'Authorization': 'Bearer $token'},
+        );
+      } catch (error, stackTrace) {
+        logger.warning('Logout failed', error, stackTrace);
+      }
     }
     _session = null;
     await _storage.clear();

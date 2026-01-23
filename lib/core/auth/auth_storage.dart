@@ -1,18 +1,19 @@
 import 'dart:convert';
 
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'auth_session.dart';
 
 class AuthStorage {
-  AuthStorage(this._prefs);
+  AuthStorage([FlutterSecureStorage? storage])
+      : _storage = storage ?? const FlutterSecureStorage();
 
   static const _sessionKey = 'auth.session';
 
-  final SharedPreferences _prefs;
+  final FlutterSecureStorage _storage;
 
-  AuthSession? readSession() {
-    final raw = _prefs.getString(_sessionKey);
+  Future<AuthSession?> readSession() async {
+    final raw = await _storage.read(key: _sessionKey);
     if (raw == null || raw.isEmpty) return null;
 
     try {
@@ -28,10 +29,10 @@ class AuthStorage {
 
   Future<void> writeSession(AuthSession session) async {
     final json = jsonEncode(session.toJson());
-    await _prefs.setString(_sessionKey, json);
+    await _storage.write(key: _sessionKey, value: json);
   }
 
   Future<void> clear() async {
-    await _prefs.remove(_sessionKey);
+    await _storage.delete(key: _sessionKey);
   }
 }

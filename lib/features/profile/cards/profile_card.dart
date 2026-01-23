@@ -299,12 +299,6 @@ class _ProfileCardState extends State<ProfileCard> {
   }
 }
 
-String _formatValue(num value) {
-  if (value % 1 == 0) {
-    return value.toInt().toString();
-  }
-  return value.toStringAsFixed(2);
-}
 
 class _ProfileCardShell extends CardBase {
   const _ProfileCardShell({

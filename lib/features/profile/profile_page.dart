@@ -133,12 +133,12 @@ class _ProfileGateState extends State<ProfileGate> {
   }
 
   Future<UserStatsDto> _loadStats() async {
-    final token = _auth?.session?.accessToken ?? '';
-    if (token.isEmpty) {
-      throw Exception('Missing token');
+    final auth = _auth;
+    if (auth == null) {
+      throw Exception('Missing auth');
     }
     final api = ProfileStatsApi(createApiClient(AppConfig.dev));
-    return api.getStats(token);
+    return api.getStatsWithAuth(auth);
   }
 
   @override
