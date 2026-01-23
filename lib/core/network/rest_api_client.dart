@@ -112,9 +112,14 @@ class RestApiClient {
       request.body = encodedBody;
     }
 
-    final streamed = await _httpClient.send(request);
-    final response = await http.Response.fromStream(streamed);
-    return _handleResponse(response, uri, upperMethod, parse);
+    try {
+      final streamed = await _httpClient.send(request);
+      final response = await http.Response.fromStream(streamed);
+      return _handleResponse(response, uri, upperMethod, parse);
+    } catch (error, stackTrace) {
+      logger.warning('API !! $upperMethod $uri failed', error, stackTrace);
+      rethrow;
+    }
   }
 
   void close() => _httpClient.close();

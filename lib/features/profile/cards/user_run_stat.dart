@@ -19,41 +19,28 @@ class UserRunStat extends StatefulWidget {
 
 class _UserRunStatState extends State<UserRunStat> {
   bool _expanded = false;
-  bool _loading = true;
-  UserRunStatsDto? _stats;
-  String? _error;
+  late final UserRunStatsApi _api;
+  late Future<UserRunStatsDto> _future;
 
   @override
   void initState() {
     super.initState();
-    _loadStats();
+    _api = UserRunStatsApi(createApiClient(AppConfig.dev));
+    _future = _loadStats();
   }
 
   void _toggleExpanded() {
     setState(() => _expanded = !_expanded);
   }
 
-  Future<void> _loadStats() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+  Future<UserRunStatsDto> _loadStats() async {
+    final auth = await AuthService.getInstance();
+    await auth.loadSession();
+    return _api.getRunStatsWithAuth(auth);
+  }
 
-    try {
-      final auth = await AuthService.getInstance();
-      await auth.loadSession();
-      final api = UserRunStatsApi(createApiClient(AppConfig.dev));
-      final stats = await api.getRunStatsWithAuth(auth);
-      if (!mounted) return;
-      setState(() => _stats = stats);
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _error = 'Ошибка статистики: $e');
-    } finally {
-      if (mounted) {
-        setState(() => _loading = false);
-      }
-    }
+  void _retry() {
+    setState(() => _future = _loadStats());
   }
 
   @override
@@ -70,145 +57,184 @@ class _UserRunStatState extends State<UserRunStat> {
       letterSpacing: 0.6,
       color: Colors.white.withValues(alpha: 0.55),
     );
-    final errorStyle = Theme.of(context)
-        .textTheme
-        .labelSmall
-        ?.copyWith(color: Colors.redAccent);
+    final cs = Theme.of(context).colorScheme;
 
-    if (_loading) {
-      return const SizedBox(
-        height: 120,
-        child: Center(child: CyberDotsLoader(width: 120, height: 44)),
-      );
-    }
-    if (_error != null) {
-      return Text(_error!, style: errorStyle);
-    }
+    return FutureBuilder<UserRunStatsDto>(
+      future: _future,
+      builder: (context, snap) {
+        if (snap.connectionState == ConnectionState.waiting) {
+          return const SizedBox(
+            height: 120,
+            child: Center(child: CyberDotsLoader(width: 120, height: 44)),
+          );
+        }
 
-    final stats = _stats;
-    final totalMeters = stats?.totalMeters ?? 0;
-    final totalMinutes = stats?.totalMinutes ?? 0;
-    final avgSpeedKmh = _calcAvgSpeed(totalMeters, totalMinutes);
-    final favoriteCar = stats?.favoriteCar;
-    final favoriteTrack = stats?.favoriteTrack;
-    return SizedBox(
-      width: double.infinity,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Kicker('[ЭТО АГРЕГАЦИЯ]', color: Colors.white70),
-          const SizedBox(height: 12),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final useSingleColumn = constraints.maxWidth < 600;
-              final spacing = useSingleColumn ? 10.0 : 12.0;
-              final blockAWidth = useSingleColumn
-                  ? constraints.maxWidth
-                  : (constraints.maxWidth - spacing) * 0.4;
-              final rightWidth = useSingleColumn
-                  ? constraints.maxWidth
-                  : (constraints.maxWidth - spacing) * 0.6;
-
-              final blockA = SizedBox(
-                width: blockAWidth,
-                child: RunStatsBlock(
-                  distanceMeters: totalMeters,
-                  durationMinutes: totalMinutes,
-                  avgSpeedKmh: avgSpeedKmh,
-                ),
-              );
-
-              final rightColumn = SizedBox(
-                width: rightWidth,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    FavoriteRunCard(
-                      distance: totalMeters,
-                      duration: totalMinutes,
-                      imageHash: favoriteCar?.imageHash ?? '',
-                      title: favoriteCar?.name ?? '—',
-                      label: 'Любимая машина',
-                      onTap: favoriteCar != null && favoriteCar.id > 0
-                          ? () => Navigator.of(context).pushNamed(
-                                '/cars/${favoriteCar.id}',
-                                arguments: favoriteCar,
-                              )
-                          : null,
+        if (snap.hasError) {
+          return SizedBox(
+            width: double.infinity,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Не удалось загрузить статистику',
+                    style: TextStyle(
+                      color: cs.onSurface.withValues(alpha: .75),
+                      fontWeight: FontWeight.w700,
                     ),
-                    const SizedBox(height: 10),
-                    FavoriteRunCard(
-                      distance: totalMeters,
-                      duration: totalMinutes,
-                      imageHash: favoriteTrack?.imageHash ?? '',
-                      title: favoriteTrack?.name ?? '—',
-                      label: 'Любимый трек',
-                      fadeRadius: 1.2,
-                      fadeStops: const [0.0, 0.7, 1.0],
-                      onTap: favoriteTrack != null && favoriteTrack.id > 0
-                          ? () => Navigator.of(context).pushNamed(
-                                '/tracks/${favoriteTrack.id}',
-                                arguments: favoriteTrack,
-                              )
-                          : null,
-                    ),
-                  ],
-                ),
-              );
-
-              if (useSingleColumn) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    blockA,
-                    SizedBox(height: spacing),
-                    rightColumn,
-                  ],
-                );
-              }
-
-              return IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    blockA,
-                    SizedBox(width: spacing),
-                    rightColumn,
-                  ],
-                ),
-              );
-            },
-          ),
-          if (_expanded) ...[
-            const SizedBox(height: 12),
-            const Text('expanded placeholder'),
-          ],
-          SizedBox(height: _expanded ? 12 : 12),
-          Center(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  _expanded ? Icons.expand_less : Icons.expand_more,
-                  size: 18,
-                  color: Colors.white.withValues(alpha: 0.6),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  _expanded ? 'Свернуть' : 'Подробнее',
-                  style: expandHintStyle,
-                ),
-                const SizedBox(width: 6),
-                Icon(
-                  _expanded ? Icons.expand_less : Icons.expand_more,
-                  size: 18,
-                  color: Colors.white.withValues(alpha: 0.6),
-                ),
-              ],
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: _retry,
+                    child: const Text('Повторить'),
+                  ),
+                ],
+              ),
             ),
+          );
+        }
+
+        final stats = snap.data;
+        if (stats == null) {
+          return SizedBox(
+            width: double.infinity,
+            child: Text(
+              'Нет данных',
+              style: TextStyle(
+                color: cs.onSurface.withValues(alpha: .65),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          );
+        }
+
+        final totalMeters = stats.totalMeters;
+        final totalMinutes = stats.totalMinutes;
+        final avgSpeedKmh = _calcAvgSpeed(totalMeters, totalMinutes);
+        final favoriteCar = stats.favoriteCar;
+        final favoriteTrack = stats.favoriteTrack;
+
+        return SizedBox(
+          width: double.infinity,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Kicker('[ЭТО АГРЕГАЦИЯ]', color: Colors.white70),
+              const SizedBox(height: 12),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final useSingleColumn = constraints.maxWidth < 600;
+                  final spacing = useSingleColumn ? 10.0 : 12.0;
+                  final blockAWidth = useSingleColumn
+                      ? constraints.maxWidth
+                      : (constraints.maxWidth - spacing) * 0.4;
+                  final rightWidth = useSingleColumn
+                      ? constraints.maxWidth
+                      : (constraints.maxWidth - spacing) * 0.6;
+
+                  final blockA = SizedBox(
+                    width: blockAWidth,
+                    child: RunStatsBlock(
+                      distanceMeters: totalMeters,
+                      durationMinutes: totalMinutes,
+                      avgSpeedKmh: avgSpeedKmh,
+                    ),
+                  );
+
+                  final rightColumn = SizedBox(
+                    width: rightWidth,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        FavoriteRunCard(
+                          distance: totalMeters,
+                          duration: totalMinutes,
+                          imageHash: favoriteCar?.imageHash ?? '',
+                          title: favoriteCar?.name ?? '—',
+                          label: 'Любимая машина',
+                          onTap: favoriteCar != null && favoriteCar.id > 0
+                              ? () => Navigator.of(context).pushNamed(
+                                    '/cars/${favoriteCar.id}',
+                                    arguments: favoriteCar,
+                                  )
+                              : null,
+                        ),
+                        const SizedBox(height: 10),
+                        FavoriteRunCard(
+                          distance: totalMeters,
+                          duration: totalMinutes,
+                          imageHash: favoriteTrack?.imageHash ?? '',
+                          title: favoriteTrack?.name ?? '—',
+                          label: 'Любимый трек',
+                          fadeRadius: 1.2,
+                          fadeStops: const [0.0, 0.7, 1.0],
+                          onTap: favoriteTrack != null && favoriteTrack.id > 0
+                              ? () => Navigator.of(context).pushNamed(
+                                    '/tracks/${favoriteTrack.id}',
+                                    arguments: favoriteTrack,
+                                  )
+                              : null,
+                        ),
+                      ],
+                    ),
+                  );
+
+                  if (useSingleColumn) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        blockA,
+                        SizedBox(height: spacing),
+                        rightColumn,
+                      ],
+                    );
+                  }
+
+                  return IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        blockA,
+                        SizedBox(width: spacing),
+                        rightColumn,
+                      ],
+                    ),
+                  );
+                },
+              ),
+              if (_expanded) ...[
+                const SizedBox(height: 12),
+                const Text('expanded placeholder'),
+              ],
+              SizedBox(height: _expanded ? 12 : 12),
+              Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      _expanded ? Icons.expand_less : Icons.expand_more,
+                      size: 18,
+                      color: Colors.white.withValues(alpha: 0.6),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      _expanded ? 'Свернуть' : 'Подробнее',
+                      style: expandHintStyle,
+                    ),
+                    const SizedBox(width: 6),
+                    Icon(
+                      _expanded ? Icons.expand_less : Icons.expand_more,
+                      size: 18,
+                      color: Colors.white.withValues(alpha: 0.6),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
