@@ -6,6 +6,7 @@ import 'package:cyberdriver/core/config/app_config.dart';
 import 'package:cyberdriver/core/media/media_cache_service.dart';
 import 'package:cyberdriver/core/ui/cards/card_base.dart';
 import 'package:cyberdriver/core/ui/widgets/kicker.dart';
+import 'package:cyberdriver/core/ui/widgets/stat_donut.dart';
 import 'package:cyberdriver/core/ui/widgets/sub_card.dart';
 import 'package:cyberdriver/shared/models/user_dto.dart';
 import 'package:cyberdriver/shared/models/user_stats_dto.dart';
@@ -199,20 +200,67 @@ class _ProfileCardState extends State<ProfileCard> {
       );
     }
 
-    final entries = stats.entries;
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
+    final summaryItems = <_StatItem>[
+      _StatItem('TOTAL DURATION', _formatValue(stats.totalDuration), SubCardTone.pink),
+      _StatItem('TOTAL DISTANCE', _formatValue(stats.totalDistanse), SubCardTone.blue),
+      _StatItem('AVERAGE SPEED', _formatValue(stats.averageSpeed), SubCardTone.pink),
+    ];
+
+    final donutItems = <_DonutItem>[
+      _DonutItem('CAREFUNESS', stats.carefuness),
+      _DonutItem('SMOOF HANDS', stats.smoofhands),
+      _DonutItem('SMOOF FEET', stats.smooffeet),
+      _DonutItem('BRAKE THRESH', stats.braketheshold),
+      _DonutItem('TRAIL BRAKE', stats.trailbrake),
+      _DonutItem('THROTTLE', stats.throttlecontrol),
+      _DonutItem('CORNER BAL', stats.cornerbalance),
+      _DonutItem('TRACK LIMIT', stats.tracklimit),
+      _DonutItem('RECOVERY', stats.recovery),
+      _DonutItem('TYRE SYMP', stats.tyresympathy),
+      _DonutItem('KERB STYLE', stats.kerbstyle),
+      _DonutItem('CONSIST', stats.consistency),
+      _DonutItem('ABS', stats.absenabled),
+      _DonutItem('TC', stats.tcenabled),
+      _DonutItem('AUTO SHIFT', stats.autoshift),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (var i = 0; i < entries.length; i++)
-          SizedBox(
-            width: 150,
-            child: SubCard(
-              title: entries[i].key,
-              value: _formatValue(entries[i].value),
-              tone: i.isEven ? SubCardTone.pink : SubCardTone.blue,
-            ),
-          ),
+        _StretchWrap(
+          minItemWidth: 150,
+          spacing: 12,
+          runSpacing: 12,
+          itemCount: summaryItems.length,
+          itemBuilder: (itemWidth, index) {
+            final item = summaryItems[index];
+            return SizedBox(
+              width: itemWidth,
+              child: SubCard(
+                title: item.title,
+                value: item.value,
+                tone: item.tone,
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 14),
+        _StretchWrap(
+          minItemWidth: 90,
+          spacing: 14,
+          runSpacing: 12,
+          itemCount: donutItems.length,
+          itemBuilder: (itemWidth, index) {
+            final item = donutItems[index];
+            return SizedBox(
+              width: itemWidth,
+              child: StatDonut(
+                label: item.label,
+                value: item.value.round(),
+              ),
+            );
+          },
+        ),
       ],
     );
   }
@@ -247,6 +295,54 @@ class _StatItem {
   final String title;
   final String value;
   final SubCardTone tone;
+}
+
+class _DonutItem {
+  const _DonutItem(this.label, this.value);
+
+  final String label;
+  final double value;
+}
+
+class _StretchWrap extends StatelessWidget {
+  const _StretchWrap({
+    required this.minItemWidth,
+    required this.spacing,
+    required this.runSpacing,
+    required this.itemCount,
+    required this.itemBuilder,
+  });
+
+  final double minItemWidth;
+  final double spacing;
+  final double runSpacing;
+  final int itemCount;
+  final Widget Function(double itemWidth, int index) itemBuilder;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxWidth = constraints.maxWidth;
+        final raw = (maxWidth + spacing) / (minItemWidth + spacing);
+        final columns = raw.floor().clamp(1, itemCount);
+        final itemWidth =
+            (maxWidth - spacing * (columns - 1)) / columns;
+
+        return Wrap(
+          spacing: spacing,
+          runSpacing: runSpacing,
+          children: [
+            for (var i = 0; i < itemCount; i++)
+              SizedBox(
+                width: itemWidth,
+                child: itemBuilder(itemWidth, i),
+              ),
+          ],
+        );
+      },
+    );
+  }
 }
 
 class _StatGrid extends StatelessWidget {
