@@ -17,6 +17,7 @@ class FavoriteRunCard extends StatelessWidget {
     required this.imageHash,
     required this.title,
     required this.label,
+    this.onTap,
     this.fadeRadius = 0.5,
     this.fadeStops = const [0.0, 0.6, 1.0],
     this.fadeColors = const [
@@ -31,6 +32,7 @@ class FavoriteRunCard extends StatelessWidget {
   final String imageHash;
   final String title;
   final String label;
+  final VoidCallback? onTap;
   final double fadeRadius;
   final List<double> fadeStops;
   final List<Color> fadeColors;
@@ -55,7 +57,7 @@ class FavoriteRunCard extends StatelessWidget {
       height: 1.0,
     );
 
-    return Container(
+    final content = Container(
       padding: const EdgeInsets.fromLTRB(8, 10, 12, 12),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.04),
@@ -71,25 +73,27 @@ class FavoriteRunCard extends StatelessWidget {
           SizedBox(
             width: _thumbWidth,
             height: _thumbHeight,
-            child: FutureBuilder<File>(
-              future: MediaCacheService.instance.getImageFile(
-                id: imageHash,
-                cacheDuration: _cacheDuration,
-                config: AppConfig.dev,
-              ),
-              builder: (context, snapshot) {
-                final file = snapshot.data;
-                if (file == null) {
-                  return const SizedBox.shrink();
-                }
-                return RadialFadeImage(
-                  file: file,
-                  radius: fadeRadius,
-                  stops: fadeStops,
-                  colors: fadeColors,
-                );
-              },
-            ),
+            child: imageHash.trim().isEmpty
+                ? const SizedBox.shrink()
+                : FutureBuilder<File>(
+                    future: MediaCacheService.instance.getImageFile(
+                      id: imageHash,
+                      cacheDuration: _cacheDuration,
+                      config: AppConfig.dev,
+                    ),
+                    builder: (context, snapshot) {
+                      final file = snapshot.data;
+                      if (file == null) {
+                        return const SizedBox.shrink();
+                      }
+                      return RadialFadeImage(
+                        file: file,
+                        radius: fadeRadius,
+                        stops: fadeStops,
+                        colors: fadeColors,
+                      );
+                    },
+                  ),
           ),
           const SizedBox(width: 6),
           Expanded(
@@ -112,6 +116,19 @@ class FavoriteRunCard extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+
+    if (onTap == null) {
+      return content;
+    }
+
+    return Material(
+      type: MaterialType.transparency,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: content,
       ),
     );
   }

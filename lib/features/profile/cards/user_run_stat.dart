@@ -1,7 +1,13 @@
+import 'package:cyberdriver/core/auth/auth_service.dart';
+import 'package:cyberdriver/core/config/app_config.dart';
+import 'package:cyberdriver/core/network/api_client_provider.dart';
 import 'package:cyberdriver/core/ui/cards/card_base.dart';
+import 'package:cyberdriver/core/ui/widgets/cyber_dots_loader.dart';
 import 'package:cyberdriver/core/ui/widgets/kicker.dart';
 import 'package:cyberdriver/features/profile/cards/widgets/favorite_run_card.dart';
 import 'package:cyberdriver/features/profile/cards/widgets/run_stats_block.dart';
+import 'package:cyberdriver/features/profile/data/user_run_stats_api.dart';
+import 'package:cyberdriver/shared/models/user_run_stats_dto.dart';
 import 'package:flutter/material.dart';
 
 class UserRunStat extends StatefulWidget {
@@ -13,9 +19,41 @@ class UserRunStat extends StatefulWidget {
 
 class _UserRunStatState extends State<UserRunStat> {
   bool _expanded = false;
+  bool _loading = true;
+  UserRunStatsDto? _stats;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStats();
+  }
 
   void _toggleExpanded() {
     setState(() => _expanded = !_expanded);
+  }
+
+  Future<void> _loadStats() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    try {
+      final auth = await AuthService.getInstance();
+      await auth.loadSession();
+      final api = UserRunStatsApi(createApiClient(AppConfig.dev));
+      final stats = await api.getRunStatsWithAuth(auth);
+      if (!mounted) return;
+      setState(() => _stats = stats);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _error = 'Ошибка статистики: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _loading = false);
+      }
+    }
   }
 
   @override
@@ -32,6 +70,27 @@ class _UserRunStatState extends State<UserRunStat> {
       letterSpacing: 0.6,
       color: Colors.white.withValues(alpha: 0.55),
     );
+    final errorStyle = Theme.of(context)
+        .textTheme
+        .labelSmall
+        ?.copyWith(color: Colors.redAccent);
+
+    if (_loading) {
+      return const SizedBox(
+        height: 120,
+        child: Center(child: CyberDotsLoader(width: 120, height: 44)),
+      );
+    }
+    if (_error != null) {
+      return Text(_error!, style: errorStyle);
+    }
+
+    final stats = _stats;
+    final totalMeters = stats?.totalMeters ?? 0;
+    final totalMinutes = stats?.totalMinutes ?? 0;
+    final avgSpeedKmh = _calcAvgSpeed(totalMeters, totalMinutes);
+    final favoriteCar = stats?.favoriteCar;
+    final favoriteTrack = stats?.favoriteTrack;
     return SizedBox(
       width: double.infinity,
       child: Column(
@@ -52,10 +111,10 @@ class _UserRunStatState extends State<UserRunStat> {
 
               final blockA = SizedBox(
                 width: blockAWidth,
-                child: const RunStatsBlock(
-                  distanceMeters: 1284000,
-                  durationMinutes: 988,
-                  avgSpeedKmh: 78.5,
+                child: RunStatsBlock(
+                  distanceMeters: totalMeters,
+                  durationMinutes: totalMinutes,
+                  avgSpeedKmh: avgSpeedKmh,
                 ),
               );
 
@@ -64,24 +123,34 @@ class _UserRunStatState extends State<UserRunStat> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const FavoriteRunCard(
-                      distance: 0,
-                      duration: 0,
-                      imageHash:
-                          '90962a4aae41bc6821cf4279871443e940dc726f2b80f317846a255d5cb17ed2.jpg',
-                      title: 'BMW 1M',
+                    FavoriteRunCard(
+                      distance: totalMeters,
+                      duration: totalMinutes,
+                      imageHash: favoriteCar?.imageHash ?? '',
+                      title: favoriteCar?.name ?? '—',
                       label: 'Любимая машина',
+                      onTap: favoriteCar != null && favoriteCar.id > 0
+                          ? () => Navigator.of(context).pushNamed(
+                                '/cars/${favoriteCar.id}',
+                                arguments: favoriteCar,
+                              )
+                          : null,
                     ),
                     const SizedBox(height: 10),
                     FavoriteRunCard(
-                      distance: 0,
-                      duration: 0,
-                      imageHash:
-                          'efff7492fbed8a0e7a078e472cad8bae3639af2683797bd18f5f0407a0cef886.png',
-                      title: 'Nordschleife',
+                      distance: totalMeters,
+                      duration: totalMinutes,
+                      imageHash: favoriteTrack?.imageHash ?? '',
+                      title: favoriteTrack?.name ?? '—',
                       label: 'Любимый трек',
                       fadeRadius: 1.2,
                       fadeStops: const [0.0, 0.7, 1.0],
+                      onTap: favoriteTrack != null && favoriteTrack.id > 0
+                          ? () => Navigator.of(context).pushNamed(
+                                '/tracks/${favoriteTrack.id}',
+                                arguments: favoriteTrack,
+                              )
+                          : null,
                     ),
                   ],
                 ),
@@ -158,4 +227,10 @@ class _UserRunStatCardShell extends CardBase {
 
   @override
   Widget buildContent(BuildContext context) => child;
+}
+
+double _calcAvgSpeed(int meters, int minutes) {
+  if (meters <= 0 || minutes <= 0) return 0;
+  final hours = minutes / 60.0;
+  return (meters / 1000.0) / hours;
 }
