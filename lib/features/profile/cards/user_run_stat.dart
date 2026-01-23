@@ -319,7 +319,7 @@ class _UserRunStatState extends State<UserRunStat> {
             const SizedBox(height: 12),
             const Text('expanded placeholder'),
           ],
-          SizedBox(height: _expanded ? 12 : 4),
+          SizedBox(height: _expanded ? 12 : 12),
           Center(
             child: Row(
               mainAxisSize: MainAxisSize.min,
