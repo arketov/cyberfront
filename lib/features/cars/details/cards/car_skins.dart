@@ -8,6 +8,7 @@ import 'package:cyberdriver/core/network/network.dart';
 import 'package:cyberdriver/core/ui/cards/card_base.dart';
 import 'package:cyberdriver/core/ui/widgets/cyber_dots_loader.dart';
 import 'package:cyberdriver/core/ui/widgets/kicker.dart';
+import 'package:cyberdriver/core/ui/widgets/radial_fade_image.dart';
 import 'package:cyberdriver/features/cars/data/cars_api.dart';
 import 'package:flutter/material.dart';
 
@@ -226,12 +227,7 @@ class _SkinImageState extends State<_SkinImage> {
       future: _future,
       builder: (context, snap) {
         if (snap.connectionState == ConnectionState.done && snap.hasData) {
-          return Image.file(
-            snap.data!,
-            fit: BoxFit.contain,
-            alignment: Alignment.center,
-            filterQuality: FilterQuality.medium,
-          );
+          return RadialFadeImage(file: snap.data!);
         }
         return Container(
           color: cs.surface.withValues(alpha: 0.2),

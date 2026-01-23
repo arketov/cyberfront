@@ -146,12 +146,7 @@ class _CarThumbState extends State<_CarThumb> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(6),
-                    child: Image.file(
-                      snap.data!,
-                      fit: BoxFit.contain,
-                      alignment: Alignment.center,
-                      filterQuality: FilterQuality.medium,
-                    ),
+                    child: RadialFadeImage(file: snap.data!),
                   ),
                 ],
               );

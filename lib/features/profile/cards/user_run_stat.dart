@@ -4,6 +4,7 @@ import 'package:cyberdriver/core/config/app_config.dart';
 import 'package:cyberdriver/core/media/media_cache_service.dart';
 import 'package:cyberdriver/core/ui/cards/card_base.dart';
 import 'package:cyberdriver/core/ui/widgets/kicker.dart';
+import 'package:cyberdriver/core/ui/widgets/radial_fade_image.dart';
 import 'package:flutter/material.dart';
 
 const Duration _cacheDuration = Duration(days: 1);
@@ -180,27 +181,10 @@ class _UserRunStatState extends State<UserRunStat> {
                                 if (file == null) {
                                   return const SizedBox.shrink();
                                 }
-                                return ShaderMask(
-                                  blendMode: BlendMode.dstIn,
-                                  shaderCallback: (bounds) {
-                                    return const RadialGradient(
-                                      center: Alignment.center,
-                                      radius: 0.5,
-                                      colors: [
-                                        Colors.white,
-                                        Colors.white,
-                                        Colors.transparent,
-                                      ],
-                                      stops: [0.0, 0.6,1.0],
-                                      transform: _AspectRadialTransform(),
-                                    ).createShader(bounds);
-                                  },
-                                  child: Image.file(
-                                    file,
-                                    width: _thumbWidth,
-                                    height: _thumbHeight,
-                                    fit: BoxFit.contain,
-                                  ),
+                                return RadialFadeImage(
+                                  file: file,
+                                  radius: 0.5,
+                                  stops: const [0.0, 0.6, 1.0],
                                 );
                               },
                             ),
@@ -287,27 +271,10 @@ class _UserRunStatState extends State<UserRunStat> {
                                 if (file == null) {
                                   return const SizedBox.shrink();
                                 }
-                                return ShaderMask(
-                                  blendMode: BlendMode.dstIn,
-                                  shaderCallback: (bounds) {
-                                    return const RadialGradient(
-                                      center: Alignment.center,
-                                      radius: 1.2,
-                                      colors: [
-                                        Colors.white,
-                                        Colors.white,
-                                        Colors.transparent,
-                                      ],
-                                      stops: [0.0, 0.7, 1.0],
-                                      transform: _AspectRadialTransform(),
-                                    ).createShader(bounds);
-                                  },
-                                  child: Image.file(
-                                    file,
-                                    width: _thumbWidth,
-                                    height: _thumbHeight,
-                                    fit: BoxFit.contain,
-                                  ),
+                                return RadialFadeImage(
+                                  file: file,
+                                  radius: 1.2,
+                                  stops: const [0.0, 0.7, 1.0],
                                 );
                               },
                             ),
@@ -441,33 +408,4 @@ class _UserRunStatCardShell extends CardBase {
 
   @override
   Widget buildContent(BuildContext context) => child;
-}
-
-class _AspectRadialTransform extends GradientTransform {
-  const _AspectRadialTransform();
-
-  @override
-  Matrix4? transform(Rect bounds, {TextDirection? textDirection}) {
-    final w = bounds.width;
-    final h = bounds.height;
-    if (w <= 0 || h <= 0) return Matrix4.identity();
-
-    final aspect = w / h;
-    var sx = 1.0;
-    var sy = 1.0;
-
-    if (aspect > 1.0) {
-      sx = aspect;
-    } else if (aspect < 1.0) {
-      sy = 1.0 / aspect;
-    }
-
-    final cx = bounds.left + w / 2;
-    final cy = bounds.top + h / 2;
-
-    return Matrix4.identity()
-      ..translateByDouble(cx, cy, 0.0, 1.0)
-      ..scaleByDouble(sx, sy, 1.0, 1.0)
-      ..translateByDouble(-cx, -cy, 0.0, 1.0);
-  }
 }

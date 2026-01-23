@@ -9,6 +9,7 @@ import 'package:cyberdriver/core/media/media_cache_service.dart';
 import 'package:cyberdriver/core/network/network.dart';
 import 'package:cyberdriver/core/ui/widgets/cyber_dots_loader.dart';
 import 'package:cyberdriver/core/ui/widgets/kicker.dart';
+import 'package:cyberdriver/core/ui/widgets/radial_fade_image.dart';
 import 'package:cyberdriver/core/utils/logger.dart';
 import 'package:cyberdriver/features/cars/data/cars_api.dart';
 import 'package:cyberdriver/shared/models/car_dto.dart';
