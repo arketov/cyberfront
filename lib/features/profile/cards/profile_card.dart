@@ -97,6 +97,12 @@ class _ProfileCardState extends State<ProfileCard> {
       color: Colors.white.withValues(alpha: 0.68),
     );
 
+    final expandHintStyle = textTheme.labelSmall?.copyWith(
+      fontWeight: FontWeight.w700,
+      letterSpacing: 0.6,
+      color: Colors.white.withValues(alpha: 0.55),
+    );
+
     final user = widget.user!;
     final displayName = user.name.isEmpty ? user.login : user.name;
 
@@ -154,7 +160,7 @@ class _ProfileCardState extends State<ProfileCard> {
             ),
           ],
         ),
-        const SizedBox(height: 22),
+        const SizedBox(height: 8),
         const _StatGrid(
           items: [
             // _StatItem('aga', 'ugu', SubCardTone.pink),
@@ -164,6 +170,30 @@ class _ProfileCardState extends State<ProfileCard> {
           const SizedBox(height: 14),
           _buildStatsBlock(context),
         ],
+        SizedBox(height: _expanded ? 12 : 4),
+        Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                _expanded ? Icons.expand_less : Icons.expand_more,
+                size: 18,
+                color: Colors.white.withValues(alpha: 0.6),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                _expanded ? 'Свернуть статистику' : 'Показать статистику',
+                style: expandHintStyle,
+              ),
+              const SizedBox(width: 6),
+              Icon(
+                _expanded ? Icons.expand_less : Icons.expand_more,
+                size: 18,
+                color: Colors.white.withValues(alpha: 0.6),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
