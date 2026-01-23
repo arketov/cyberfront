@@ -3,9 +3,10 @@ import 'package:cyberdriver/core/config/app_config.dart';
 import 'package:cyberdriver/core/network/api_client_provider.dart';
 import 'package:cyberdriver/core/ui/cards/card_base.dart';
 import 'package:cyberdriver/core/ui/widgets/cyber_dots_loader.dart';
-import 'package:cyberdriver/core/ui/widgets/gradient_progress_bar.dart';
 import 'package:cyberdriver/core/ui/widgets/kicker.dart';
+import 'package:cyberdriver/features/profile/cards/widgets/average_stats_block.dart';
 import 'package:cyberdriver/features/profile/cards/widgets/favorite_run_card.dart';
+import 'package:cyberdriver/features/profile/cards/widgets/coverage_stats_block.dart';
 import 'package:cyberdriver/features/profile/cards/widgets/run_stats_block.dart';
 import 'package:cyberdriver/features/profile/data/user_run_stats_api.dart';
 import 'package:cyberdriver/shared/models/user_run_stats_dto.dart';
@@ -177,7 +178,6 @@ class _UserRunStatState extends State<UserRunStat> {
                       ],
                     ),
                   );
-
                   if (useSingleColumn) {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -188,7 +188,6 @@ class _UserRunStatState extends State<UserRunStat> {
                       ],
                     );
                   }
-
                   return IntrinsicHeight(
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -203,75 +202,46 @@ class _UserRunStatState extends State<UserRunStat> {
               ),
               if (_expanded) ...[
                 const SizedBox(height: 12),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.fromLTRB(8, 10, 12, 12),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.04),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.12),
-                          width: 1,
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final maxWidth = constraints.maxWidth;
+                    final isNarrow = maxWidth < 560;
+                    final itemWidth = isNarrow ? maxWidth : (maxWidth - 10) / 2;
+                    final coverageCard = CoverageStatsBlock(
+                      carCount: 12,
+                      carTotal: 1985,
+                      trackCount: 10,
+                      trackTotal: 325,
+                    );
+                    const averagesCard = AverageStatsBlock(
+                      carMeters: 300000,
+                      carDuration: 80,
+                      trackMeters: 200000,
+                      trackDuration: 124,
+                    );
+
+                    if (isNarrow) {
+                      return Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
                         children: [
-                          Text('Охват'),
-                          SizedBox(height: 10),
-                          Row(
-                            children: const [
-                              Text('Машины',),
-                              SizedBox(width: 8),
-                              Expanded(child: GradientProgressBar(value: 50)),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            children: const [
-                              Text('Трассы'),
-                              SizedBox(width: 8),
-                              Expanded(child: GradientProgressBar(value: 50)),
-                            ],
-                          ),
+                          SizedBox(width: itemWidth, child: coverageCard),
+                          SizedBox(width: itemWidth, child: averagesCard),
+                        ],
+                      );
+                    }
+
+                    return IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(child: coverageCard),
+                          const SizedBox(width: 10),
+                          const Expanded(child: averagesCard),
                         ],
                       ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.fromLTRB(8, 10, 12, 12),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.04),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.12),
-                          width: 1,
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text('Cредние'),
-                          SizedBox(height: 10),
-                          Row(
-                            children: [
-                              Text('На машине'),
-                              Text('300 км • 1 час 20 минут'),
-                            ],
-                          ),
-                          SizedBox(height: 10),
-                          Row(
-                            children: [
-                              Text('На трассе'),
-                              Text('300 км • 1 час 20 минут'),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
               ],
               SizedBox(height: _expanded ? 12 : 12),
