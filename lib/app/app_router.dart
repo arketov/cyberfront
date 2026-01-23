@@ -14,6 +14,14 @@ import 'package:cyberdriver/shared/models/car_dto.dart';
 
 class AppRouter {
   static const String start = '/profile';
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
+
+  static void navigateToStart() {
+    final navigator = navigatorKey.currentState;
+    if (navigator == null) return;
+    navigator.pushNamedAndRemoveUntil(start, (route) => false);
+  }
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     final name = settings.name ?? '';

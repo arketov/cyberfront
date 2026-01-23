@@ -44,6 +44,7 @@ class _AppState extends State<App> {
       debugShowCheckedModeBanner: false,
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.dark,
+      navigatorKey: AppRouter.navigatorKey,
       initialRoute: '/hello',
       onGenerateRoute: AppRouter.onGenerateRoute,
       navigatorObservers: [appRouteObserver], // <-- важно

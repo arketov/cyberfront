@@ -103,7 +103,10 @@ class RestApiClient {
     };
 
     final encodedBody = _encodeBody(body, mergedHeaders);
-    final request = http.Request(method.toUpperCase(), uri)
+    final upperMethod = method.toUpperCase();
+    logger.info('API -> $upperMethod $uri${body != null ? ' (body)' : ''}');
+
+    final request = http.Request(upperMethod, uri)
       ..headers.addAll(mergedHeaders);
     if (encodedBody != null) {
       request.body = encodedBody;
@@ -111,7 +114,7 @@ class RestApiClient {
 
     final streamed = await _httpClient.send(request);
     final response = await http.Response.fromStream(streamed);
-    return _handleResponse(response, uri, parse);
+    return _handleResponse(response, uri, upperMethod, parse);
   }
 
   void close() => _httpClient.close();
@@ -143,6 +146,7 @@ class RestApiClient {
   ApiResponse<T> _handleResponse<T>(
     http.Response response,
     Uri uri,
+    String method,
     T Function(dynamic json)? parse,
   ) {
     final decoded = _tryDecode(response.body);
@@ -152,6 +156,7 @@ class RestApiClient {
       if (parse != null) {
         try {
           final parsed = parse(decoded);
+          logger.info('API <- ${response.statusCode} $method $uri');
           return ApiResponse(
             statusCode: response.statusCode,
             data: parsed,
@@ -168,6 +173,7 @@ class RestApiClient {
           );
         }
       }
+      logger.info('API <- ${response.statusCode} $method $uri');
       return ApiResponse(
         statusCode: response.statusCode,
         data: decoded as T,
@@ -178,8 +184,7 @@ class RestApiClient {
 
     final message = _errorMessage(decoded, response.statusCode);
     logger.warning(
-      'Request failed: ${response.statusCode} $uri',
-      message,
+      'API !! ${response.statusCode} $method $uri - $message',
     );
     throw ApiException(
       statusCode: response.statusCode,

@@ -7,6 +7,7 @@
 - If a private call needs a token, expose a `getXWithAuth(AuthService auth)` method that wraps `withAuth`.
 - Handle `401` only via `AuthService.withAuth` (refresh + logout on failure). Do not re-implement this in UI.
 - Use `RestApiClient` from `createApiClient(AppConfig.dev)` in services.
+- API logging is handled in `RestApiClient`; do not add ad-hoc request logging in UI.
 
 ## Token Storage
 - Store session only via `AuthStorage` (secure storage). Never use `SharedPreferences` for tokens.
@@ -15,4 +16,3 @@
 ## Error Handling
 - API services throw `ApiException` for non-2xx responses.
 - Do not swallow errors in services unless specifically required; let UI decide how to show errors.
-

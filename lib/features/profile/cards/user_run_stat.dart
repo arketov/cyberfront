@@ -180,10 +180,27 @@ class _UserRunStatState extends State<UserRunStat> {
                                 if (file == null) {
                                   return const SizedBox.shrink();
                                 }
-                                return FittedBox(
-                                  fit: BoxFit.contain,
-                                  alignment: Alignment.center,
-                                  child: Image.file(file),
+                                return ShaderMask(
+                                  blendMode: BlendMode.dstIn,
+                                  shaderCallback: (bounds) {
+                                    return const RadialGradient(
+                                      center: Alignment.center,
+                                      radius: 0.5,
+                                      colors: [
+                                        Colors.white,
+                                        Colors.white,
+                                        Colors.transparent,
+                                      ],
+                                      stops: [0.0, 0.6,1.0],
+                                      transform: _AspectRadialTransform(),
+                                    ).createShader(bounds);
+                                  },
+                                  child: Image.file(
+                                    file,
+                                    width: _thumbWidth,
+                                    height: _thumbHeight,
+                                    fit: BoxFit.contain,
+                                  ),
                                 );
                               },
                             ),
@@ -194,6 +211,15 @@ class _UserRunStatState extends State<UserRunStat> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
+                                  'Любимая машина',
+                                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.6,
+                                    color: Colors.white.withValues(alpha: 0.6),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
                                   'BMW 1M',
                                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.w800,
@@ -202,20 +228,33 @@ class _UserRunStatState extends State<UserRunStat> {
                                     height: 1.0,
                                   ),
                                 ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  '0.0 КМ • 00:00.000',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.6,
-                                    color: Colors.white.withValues(alpha: 0.6),
-                                    height: 1.0,
-                                  ),
-                                ),
                               ],
                             ),
+                          ),
+                          const SizedBox(width: 8),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                '0.0 КМ',
+                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.6,
+                                  color: Colors.white.withValues(alpha: 0.6),
+                                  height: 1.0,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                '00:00.000',
+                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.6,
+                                  color: Colors.white.withValues(alpha: 0.6),
+                                  height: 1.0,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -248,10 +287,27 @@ class _UserRunStatState extends State<UserRunStat> {
                                 if (file == null) {
                                   return const SizedBox.shrink();
                                 }
-                                return FittedBox(
-                                  fit: BoxFit.contain,
-                                  alignment: Alignment.center,
-                                  child: Image.file(file),
+                                return ShaderMask(
+                                  blendMode: BlendMode.dstIn,
+                                  shaderCallback: (bounds) {
+                                    return const RadialGradient(
+                                      center: Alignment.center,
+                                      radius: 1.2,
+                                      colors: [
+                                        Colors.white,
+                                        Colors.white,
+                                        Colors.transparent,
+                                      ],
+                                      stops: [0.0, 0.7, 1.0],
+                                      transform: _AspectRadialTransform(),
+                                    ).createShader(bounds);
+                                  },
+                                  child: Image.file(
+                                    file,
+                                    width: _thumbWidth,
+                                    height: _thumbHeight,
+                                    fit: BoxFit.contain,
+                                  ),
                                 );
                               },
                             ),
@@ -262,6 +318,15 @@ class _UserRunStatState extends State<UserRunStat> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
+                                  'Любимый трек',
+                                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.6,
+                                    color: Colors.white.withValues(alpha: 0.6),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
                                   'Nordschleife',
                                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.w800,
@@ -270,20 +335,33 @@ class _UserRunStatState extends State<UserRunStat> {
                                     height: 1.0,
                                   ),
                                 ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  '0.0 КМ • 00:00.000',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.6,
-                                    color: Colors.white.withValues(alpha: 0.6),
-                                    height: 1.0,
-                                  ),
-                                ),
                               ],
                             ),
+                          ),
+                          const SizedBox(width: 8),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                '0.0 КМ',
+                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.6,
+                                  color: Colors.white.withValues(alpha: 0.6),
+                                  height: 1.0,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                '00:00.000',
+                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.6,
+                                  color: Colors.white.withValues(alpha: 0.6),
+                                  height: 1.0,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -363,4 +441,33 @@ class _UserRunStatCardShell extends CardBase {
 
   @override
   Widget buildContent(BuildContext context) => child;
+}
+
+class _AspectRadialTransform extends GradientTransform {
+  const _AspectRadialTransform();
+
+  @override
+  Matrix4? transform(Rect bounds, {TextDirection? textDirection}) {
+    final w = bounds.width;
+    final h = bounds.height;
+    if (w <= 0 || h <= 0) return Matrix4.identity();
+
+    final aspect = w / h;
+    var sx = 1.0;
+    var sy = 1.0;
+
+    if (aspect > 1.0) {
+      sx = aspect;
+    } else if (aspect < 1.0) {
+      sy = 1.0 / aspect;
+    }
+
+    final cx = bounds.left + w / 2;
+    final cy = bounds.top + h / 2;
+
+    return Matrix4.identity()
+      ..translateByDouble(cx, cy, 0.0, 1.0)
+      ..scaleByDouble(sx, sy, 1.0, 1.0)
+      ..translateByDouble(-cx, -cy, 0.0, 1.0);
+  }
 }

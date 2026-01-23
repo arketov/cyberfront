@@ -1,6 +1,7 @@
 import 'package:cyberdriver/core/config/app_config.dart';
 import 'package:cyberdriver/core/network/network.dart';
 import 'package:cyberdriver/core/utils/logger.dart';
+import 'package:cyberdriver/app/app_router.dart';
 
 import 'auth_session.dart';
 import 'auth_storage.dart';
@@ -86,6 +87,9 @@ class AuthService {
     } catch (error, stackTrace) {
       logger.severe('Auth refresh failed', error, stackTrace);
       await logout();
+      if (error is ApiException && error.statusCode == 401) {
+        AppRouter.navigateToStart();
+      }
       rethrow;
     }
   }
