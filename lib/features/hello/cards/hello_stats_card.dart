@@ -1,5 +1,9 @@
 //lib/features/hello/cards/hello_stats_card.dart
+import 'package:cyberdriver/core/config/app_config.dart';
+import 'package:cyberdriver/core/network/api_client_provider.dart';
 import 'package:cyberdriver/core/ui/widgets/kicker.dart';
+import 'package:cyberdriver/features/hello/data/hello_stats_api.dart';
+import 'package:cyberdriver/shared/models/cyber_stats_dto.dart';
 import 'package:flutter/material.dart';
 import '../../../core/ui/cards/card_base.dart';
 
@@ -13,8 +17,29 @@ class HelloStatsCard extends CardBase {
   Color? backgroundColor(BuildContext context) => const Color(0xFFA9A9A9);
 
   @override
-  Widget buildContent(BuildContext context) {
+  Widget buildContent(BuildContext context) => const _HelloStatsCardContent();
+}
 
+class _HelloStatsCardContent extends StatefulWidget {
+  const _HelloStatsCardContent();
+
+  @override
+  State<_HelloStatsCardContent> createState() => _HelloStatsCardContentState();
+}
+
+class _HelloStatsCardContentState extends State<_HelloStatsCardContent> {
+  late final HelloStatsApi _api;
+  late Future<CyberStatsDto> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _api = HelloStatsApi(createApiClient(AppConfig.dev));
+    _future = _api.getCyberStats();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     Widget stat(String value, String label) {
       return Expanded(
         child: Column(
@@ -44,23 +69,62 @@ class HelloStatsCard extends CardBase {
       );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Kicker('[СТАТИСТИКА]', color: Colors.black54,),
-        const SizedBox(height: 12),
-        Row(
+    return FutureBuilder<CyberStatsDto>(
+      future: _future,
+      builder: (context, snap) {
+        if (snap.connectionState == ConnectionState.waiting) {
+          return const SizedBox(
+            height: 52,
+            child: Center(
+              child: SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          );
+        }
+
+        if (snap.hasError) {
+          return Text(
+            'Ошибка загрузки: ${snap.error}',
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(color: Colors.black54),
+          );
+        }
+
+        final stats = snap.data;
+        if (stats == null) {
+          return Text(
+            'Нет данных',
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(color: Colors.black54),
+          );
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            stat('4', 'КОКПИТА'),
-            const SizedBox(width: 7),
-            stat('69+', 'ТРАСС'),
-            const SizedBox(width: 0),
-            stat('1666', ' АВТО'),
-            const SizedBox(width: 7),
-            stat('27+', 'ДОРОГ'),
+            const Kicker('[СТАТИСТИКА]', color: Colors.black54),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                stat('4', 'КОКПИТА'),
+                const SizedBox(width: 7),
+                stat('${stats.tracksTotal}', 'ТРАСС'),
+                const SizedBox(width: 7),
+                stat('${stats.carsTotal}', 'АВТО'),
+                const SizedBox(width: 7),
+                stat('${stats.activeUsers}', 'ЮЗЕРОВ'),
+              ],
+            ),
           ],
-        ),
-      ],
+        );
+      },
     );
   }
 }
