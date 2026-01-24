@@ -27,7 +27,8 @@ class _HelloStatsCardContent extends StatefulWidget {
   State<_HelloStatsCardContent> createState() => _HelloStatsCardContentState();
 }
 
-class _HelloStatsCardContentState extends State<_HelloStatsCardContent> {
+class _HelloStatsCardContentState extends State<_HelloStatsCardContent>
+    with AutomaticKeepAliveClientMixin<_HelloStatsCardContent> {
   late final HelloStatsApi _api;
   late Future<CyberStatsDto> _future;
 
@@ -40,6 +41,7 @@ class _HelloStatsCardContentState extends State<_HelloStatsCardContent> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     Widget stat(String value, String label) {
       return Expanded(
         child: Column(
@@ -127,4 +129,7 @@ class _HelloStatsCardContentState extends State<_HelloStatsCardContent> {
       },
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

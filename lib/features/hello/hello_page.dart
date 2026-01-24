@@ -7,6 +7,7 @@ import 'package:cyberdriver/core/ui/widgets/infinite_ticker.dart';
 
 import 'cards/hello_hero_card.dart';
 import 'cards/hello_grid_section.dart';
+import 'cards/hello_news_card.dart';
 import 'cards/hello_stats_card.dart';
 
 TickerItem choice(Random r, List<TickerItem> items) => items[r.nextInt(items.length)];
@@ -43,6 +44,7 @@ class HelloPage extends BasePage {
   List<Widget> buildBlocks(BuildContext context) {
     return const [
       HelloHeroCard(),
+      HelloNewsCard(),
       HelloGridSection(),
       HelloStatsCard(),
     ];
