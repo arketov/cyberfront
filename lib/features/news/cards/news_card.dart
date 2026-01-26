@@ -7,6 +7,7 @@ import 'package:cyberdriver/core/media/media_cache_service.dart';
 import 'package:cyberdriver/core/network/api_client_provider.dart';
 import 'package:cyberdriver/core/theme/app_theme.dart';
 import 'package:cyberdriver/core/ui/cards/card_base.dart';
+import 'package:cyberdriver/core/ui/widgets/app_notifications.dart';
 import 'package:cyberdriver/core/ui/widgets/kicker.dart';
 import 'package:cyberdriver/core/utils/date_time_service.dart';
 import 'package:cyberdriver/features/news/data/news_api.dart';
@@ -130,15 +131,11 @@ class _NewsCardContentState extends State<_NewsCardContent> {
         _deleted = true;
         _expanded = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Новость удалена')),
-      );
+      AppNotifications.show('Новость удалена');
     } catch (e) {
       if (!mounted) return;
       setState(() => _deleting = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ошибка удаления: $e')),
-      );
+      AppNotifications.error('Ошибка удаления: $e');
     }
   }
 

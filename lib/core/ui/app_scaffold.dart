@@ -1,13 +1,15 @@
 // lib/core/ui/app_scaffold.dart
 
 import 'dart:ui';
+import 'package:cyberdriver/core/auth/auth_service.dart';
+import 'package:cyberdriver/core/ui/widgets/app_notifications.dart';
 import 'package:cyberdriver/core/ui/widgets/logo.dart';
 import 'package:flutter/material.dart';
 
 import '../navigation/app_section.dart';
 import '../theme/app_theme.dart';
 
-class AppScaffold extends StatelessWidget {
+class AppScaffold extends StatefulWidget {
   const AppScaffold({
     super.key,
     required this.current,
@@ -21,11 +23,35 @@ class AppScaffold extends StatelessWidget {
   final String? title;
   final List<Widget>? actions;
 
+  @override
+  State<AppScaffold> createState() => _AppScaffoldState();
+}
+
+class _AppScaffoldState extends State<AppScaffold> {
+  AuthService? _auth;
+  bool _authReady = false;
+
   static const double _desktopBreakpoint = 900;
   static const double _desktopMaxWidth = 1280;
 
+  @override
+  void initState() {
+    super.initState();
+    _loadAuth();
+  }
+
+  Future<void> _loadAuth() async {
+    final auth = await AuthService.getInstance();
+    await auth.loadSession();
+    if (!mounted) return;
+    setState(() {
+      _auth = auth;
+      _authReady = true;
+    });
+  }
+
   void _go(BuildContext context, AppSection to) {
-    if (to == current) return;
+    if (to == widget.current) return;
     Navigator.of(context).pushReplacementNamed(to.route);
   }
 
@@ -37,6 +63,16 @@ class AppScaffold extends StatelessWidget {
       builder: (context, constraints) {
         final isDesktop = constraints.maxWidth >= _desktopBreakpoint;
 
+        final isAdmin = _authReady && (_auth?.session?.user.role.id == 1);
+        final primary = AppSectionX.primarySections;
+        final mobileItems =
+            isAdmin ? [...primary, AppSection.admin] : primary;
+        final desktopExtra = isAdmin
+            ? AppSectionX.desktopExtraSections
+            : AppSectionX.desktopExtraSections
+                .where((s) => s != AppSection.admin)
+                .toList(growable: false);
+
         final content = isDesktop
             ? Center(
           child: ConstrainedBox(
@@ -44,7 +80,9 @@ class AppScaffold extends StatelessWidget {
             child: Row(
               children: [
                 _Sidebar(
-                  current: current,
+                  current: widget.current,
+                  primary: primary,
+                  extra: desktopExtra,
                   onTap: (s) => _go(context, s),
                 ),
                 Expanded(
@@ -54,7 +92,7 @@ class AppScaffold extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 12),
-                        Expanded(child: child),
+                        Expanded(child: widget.child),
                       ],
                     ),
                   ),
@@ -65,15 +103,35 @@ class AppScaffold extends StatelessWidget {
         )
             : _MobileBody(
           nav: _FloatingBottomNav(
-            current: current,
+            current: widget.current,
+            items: mobileItems,
             onTap: (s) => _go(context, s),
           ),
-          child: child,
+          child: widget.child,
         );
 
         return Scaffold(
           backgroundColor: palette.bg,
-          body: content,
+          body: Stack(
+            children: [
+              content,
+              SafeArea(
+                top: true,
+                bottom: false,
+                left: false,
+                right: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: AppNotificationHost(
+                      controller: AppNotifications.controller,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -141,10 +199,12 @@ class _MobileBody extends StatelessWidget {
 class _FloatingBottomNav extends StatelessWidget {
   const _FloatingBottomNav({
     required this.current,
+    required this.items,
     required this.onTap,
   });
 
   final AppSection current;
+  final List<AppSection> items;
   final ValueChanged<AppSection> onTap;
 
   static const double _height = 66;
@@ -153,8 +213,8 @@ class _FloatingBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = Theme.of(context).extension<AppPalette>()!;
-    final items = AppSectionX.primarySections;
-    final idx = items.indexOf(current).clamp(0, items.length - 1);
+    final currentIndex = items.indexOf(current);
+    final idx = (currentIndex < 0 ? 0 : currentIndex).clamp(0, items.length - 1);
 
     return LayoutBuilder(
       builder: (context, c) {
@@ -224,18 +284,19 @@ class _NavItem extends StatelessWidget {
 class _Sidebar extends StatelessWidget {
   const _Sidebar({
     required this.current,
+    required this.primary,
+    required this.extra,
     required this.onTap,
   });
 
   final AppSection current;
+  final List<AppSection> primary;
+  final List<AppSection> extra;
   final ValueChanged<AppSection> onTap;
 
   @override
   Widget build(BuildContext context) {
     final palette = Theme.of(context).extension<AppPalette>()!;
-    final primary = AppSectionX.primarySections;
-    final extra = AppSectionX.desktopExtraSections;
-
     return Container(
       width: 280,
       margin: const EdgeInsets.all(16),

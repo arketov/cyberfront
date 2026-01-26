@@ -19,7 +19,7 @@ extension AppSectionX on AppSection {
     AppSection.cars => 'МАШИНЫ',
     AppSection.records => 'РЕКОРДЫ',
     AppSection.profile => 'ПРОФИЛЬ',
-    AppSection.admin => 'КИБЕРДЕНИС',
+    AppSection.admin => 'КИБЕРАДМИН',
   };
 
   IconData get icon => switch (this) {

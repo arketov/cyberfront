@@ -2,10 +2,17 @@ class DateTimeService {
   const DateTimeService._();
 
   static DateTime? toLocal(String? utcValue) {
-    if (utcValue == null || utcValue.trim().isEmpty) return null;
-    final parsed = DateTime.tryParse(utcValue);
+    if (utcValue == null) return null;
+    final text = utcValue.trim();
+    if (text.isEmpty) return null;
+    final parsed = DateTime.tryParse(_ensureUtcSuffix(text));
     if (parsed == null) return null;
     return parsed.toLocal();
+  }
+
+  static String _ensureUtcSuffix(String value) {
+    final hasZone = RegExp(r'(Z|[+-]\d{2}:\d{2}|[+-]\d{4})$').hasMatch(value);
+    return hasZone ? value : '${value}Z';
   }
 
   static String formatDayMonth(DateTime? value) {
