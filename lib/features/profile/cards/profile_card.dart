@@ -35,6 +35,17 @@ class _ProfileCardState extends State<ProfileCard> {
   UserStatsDto? _stats;
   String? _statsError;
 
+  void _openEditDialog() {
+    final user = widget.user;
+    if (user == null) return;
+    showDialog<void>(
+      context: context,
+      builder: (context) => _ProfileEditDialog(
+        initialName: user.name.isEmpty ? user.login : user.name,
+      ),
+    );
+  }
+
   void _toggleExpanded() {
     final next = !_expanded;
     setState(() => _expanded = next);
@@ -109,7 +120,20 @@ class _ProfileCardState extends State<ProfileCard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Kicker('[ЭТО ТЫ]', color: Colors.white70),
+        Row(
+          children: [
+            const Kicker('[ЭТО ТЫ]', color: Colors.white70),
+            const Spacer(),
+            IconButton(
+              onPressed: _openEditDialog,
+              icon: const Icon(Icons.settings),
+              iconSize: 18,
+              splashRadius: 18,
+              color: Colors.white.withValues(alpha: 0.7),
+              tooltip: 'Настройки профиля',
+            ),
+          ],
+        ),
         const SizedBox(height: 10),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -325,6 +349,150 @@ class _ProfileCardState extends State<ProfileCard> {
           },
         ),
       ],
+    );
+  }
+}
+
+class _ProfileEditDialog extends StatefulWidget {
+  const _ProfileEditDialog({
+    required this.initialName,
+  });
+
+  final String initialName;
+
+  @override
+  State<_ProfileEditDialog> createState() => _ProfileEditDialogState();
+}
+
+class _ProfileEditDialogState extends State<_ProfileEditDialog> {
+  late final TextEditingController _nameController;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.initialName);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final palette = Theme.of(context).extension<AppPalette>();
+
+    return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 420),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'НАСТРОЙКА ПРОФИЛЯ',
+                style: textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.6,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Имя',
+                style: textTheme.labelSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.6,
+                  color: Colors.white.withValues(alpha: 0.6),
+                ),
+              ),
+              const SizedBox(height: 6),
+              TextField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: '[ИМЯ]',
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                'Фото',
+                style: textTheme.labelSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.6,
+                  color: Colors.white.withValues(alpha: 0.6),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(18),
+                      color: Colors.white.withValues(alpha: 0.06),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.12),
+                        width: 1,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.person_outline,
+                      color: Colors.white.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        OutlinedButton(
+                          onPressed: () {},
+                          child: const Text('ВЫБРАТЬ ФОТО'),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'JPG/PNG, до 5MB',
+                          style: textTheme.labelSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white.withValues(alpha: 0.5),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('ОТМЕНА'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            palette?.pink ?? Theme.of(context).colorScheme.primary,
+                      ),
+                      child: const Text('СОХРАНИТЬ'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

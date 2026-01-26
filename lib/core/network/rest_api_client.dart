@@ -189,7 +189,7 @@ class RestApiClient {
 
     final message = _errorMessage(decoded, response.statusCode);
     logger.warning(
-      'API !! ${response.statusCode} $method $uri - $message',
+      'API !! ${response.statusCode} $method $uri - $message | body: ${response.body}',
     );
     throw ApiException(
       statusCode: response.statusCode,
@@ -211,6 +211,12 @@ class RestApiClient {
   String _errorMessage(dynamic decoded, int statusCode) {
     if (decoded is Map && decoded['message'] is String) {
       return decoded['message'] as String;
+    }
+    if (decoded is Map && decoded['detail'] is String) {
+      return decoded['detail'] as String;
+    }
+    if (decoded is Map && decoded['error'] is String) {
+      return decoded['error'] as String;
     }
     return 'Request failed with status $statusCode';
   }

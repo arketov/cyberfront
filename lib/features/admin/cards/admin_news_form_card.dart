@@ -20,7 +20,7 @@ class AdminNewsFormCard extends CollapsibleCardBase {
   Color? get kickerColor => Colors.white70;
 
   @override
-  Widget buildExpandedContent(BuildContext context) =>
+  Widget buildExpandedContent(BuildContext context, bool expanded) =>
       const _AdminNewsFormContent();
 }
 

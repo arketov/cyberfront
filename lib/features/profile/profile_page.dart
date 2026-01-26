@@ -11,6 +11,7 @@ import 'package:cyberdriver/core/auth/auth_service.dart';
 import 'package:cyberdriver/core/config/app_config.dart';
 import 'package:cyberdriver/core/navigation/app_section.dart';
 import 'package:cyberdriver/core/network/api_client_provider.dart';
+import 'package:cyberdriver/core/theme/app_theme.dart';
 import 'package:cyberdriver/core/ui/base_page.dart';
 import 'package:cyberdriver/core/ui/cards/card_base.dart';
 import 'package:cyberdriver/core/ui/widgets/cyber_dots_loader.dart';
@@ -211,6 +212,7 @@ class _LoginPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final palette = Theme.of(context).extension<AppPalette>();
     final errorStyle = textTheme.bodySmall?.copyWith(color: Colors.redAccent);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -265,6 +267,31 @@ class _LoginPanel extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ),
+        const SizedBox(height: 14),
+        GestureDetector(
+          onTap: () => Navigator.of(context).pushNamed('/register'),
+          child: Text(
+            'ЗАРЕГИСТРИРОВАТЬСЯ',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.8,
+              color: palette?.pink ?? Theme.of(context).colorScheme.primary,
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'ЗАБЫЛ ПАРОЛЬ?',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.6,
+            color: palette?.muted2 ?? Colors.white.withValues(alpha: 0.55),
           ),
         ),
       ],

@@ -6,6 +6,7 @@ import 'package:cyberdriver/core/ui/cards/card_base.dart';
 import 'package:cyberdriver/core/ui/widgets/infinite_ticker.dart';
 import 'package:cyberdriver/core/ui/widgets/kicker.dart';
 import 'package:cyberdriver/features/admin/cards/admin_news_form_card.dart';
+import 'package:cyberdriver/features/admin/cards/admin_reg_tokens_card.dart';
 import 'package:flutter/material.dart';
 
 TickerItem _choice(Random r, List<TickerItem> items) => items[r.nextInt(items.length)];
@@ -39,6 +40,7 @@ class AdminPage extends BasePage {
   List<Widget> buildBlocks(BuildContext context) => [
         const _AdminPlaceholderCard(),
         AdminNewsFormCard(),
+        AdminRegTokensCard(),
       ];
 }
 

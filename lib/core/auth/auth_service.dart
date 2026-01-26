@@ -48,6 +48,24 @@ class AuthService {
     return _session!;
   }
 
+  Future<void> register({
+    required String login,
+    required String password,
+    required String regToken,
+    required String name,
+  }) async {
+    await _client.post<void>(
+      'auth/register',
+      body: {
+        'login': login,
+        'password': password,
+        'reg_token': regToken,
+        'name': name,
+      },
+      parse: (_) => null,
+    );
+  }
+
   Future<AuthSession> refresh() async {
     final stored = await _storage.readSession();
     final token = _session?.accessToken ?? stored?.accessToken;

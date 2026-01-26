@@ -14,7 +14,7 @@ abstract class CollapsibleCardBase extends CardBase {
   Color? get kickerColor => null;
   Duration get toggleDuration => const Duration(milliseconds: 220);
 
-  Widget buildExpandedContent(BuildContext context);
+  Widget buildExpandedContent(BuildContext context, bool expanded);
 
   @override
   VoidCallback? onTap(BuildContext context) => () {
@@ -60,10 +60,10 @@ abstract class CollapsibleCardBase extends CardBase {
                   heightFactor: expanded ? 1.0 : 0.0,
                   child: Padding(
                     padding: const EdgeInsets.only(top: 10),
-                    child: buildExpandedContent(context),
-                  ),
+                  child: buildExpandedContent(context, expanded),
                 ),
               ),
+            ),
             ),
           ],
         );
