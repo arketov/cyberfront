@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 enum AppSection {
   hello,
+  news,
   tracks,
   cars,
   records,
@@ -13,6 +14,7 @@ enum AppSection {
 extension AppSectionX on AppSection {
   String get label => switch (this) {
     AppSection.hello => 'ПРИВЕТ',
+    AppSection.news => 'НОВОСТИ',
     AppSection.tracks => 'ТРАССЫ',
     AppSection.cars => 'МАШИНЫ',
     AppSection.records => 'РЕКОРДЫ',
@@ -22,6 +24,7 @@ extension AppSectionX on AppSection {
 
   IconData get icon => switch (this) {
     AppSection.hello => Icons.waving_hand_rounded,
+    AppSection.news => Icons.newspaper_rounded,
     AppSection.tracks => Icons.route_rounded,
     AppSection.cars => Icons.directions_car_rounded,
     AppSection.records => Icons.emoji_events_rounded,
@@ -31,6 +34,7 @@ extension AppSectionX on AppSection {
 
   String get route => switch (this) {
     AppSection.hello => '/hello',
+    AppSection.news => '/news',
     AppSection.tracks => '/tracks',
     AppSection.cars => '/cars',
     AppSection.records => '/records',
@@ -39,6 +43,7 @@ extension AppSectionX on AppSection {
   };
 
   bool get primary => switch (this) {
+    AppSection.news => false,
     AppSection.admin => false,
     _ => true,
   };
@@ -47,5 +52,5 @@ extension AppSectionX on AppSection {
       AppSection.values.where((s) => s.primary).toList(growable: false);
 
   static List<AppSection> get desktopExtraSections =>
-      const [AppSection.admin];
+      const [AppSection.news, AppSection.admin];
 }

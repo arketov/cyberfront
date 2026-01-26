@@ -9,6 +9,7 @@ import 'package:cyberdriver/features/cars/cars_page.dart';
 import 'package:cyberdriver/features/cars/details/details_car.dart';
 import 'package:cyberdriver/features/records/records_page.dart';
 import 'package:cyberdriver/features/profile/profile_page.dart';
+import 'package:cyberdriver/features/news/news_page.dart';
 import 'package:cyberdriver/shared/models/track_dto.dart';
 import 'package:cyberdriver/shared/models/car_dto.dart';
 
@@ -56,6 +57,8 @@ class AppRouter {
         return NoTransitionPageRoute(builder: (_) => const RecordsPage(), settings: settings);
       case '/profile':
         return NoTransitionPageRoute(builder: (_) => const ProfilePage(), settings: settings);
+      case '/news':
+        return NoTransitionPageRoute(builder: (_) => const NewsPage(), settings: settings);
       case '/hello':
       default:
         return NoTransitionPageRoute(builder: (_) => const HelloPage(), settings: settings);
