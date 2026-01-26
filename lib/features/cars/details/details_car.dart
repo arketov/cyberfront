@@ -13,6 +13,7 @@ import 'package:cyberdriver/features/cars/details/cards/car_curve.dart';
 import 'package:cyberdriver/features/cars/details/cards/car_props.dart';
 import 'package:cyberdriver/features/cars/details/cards/car_records.dart';
 import 'package:cyberdriver/features/cars/details/cards/car_skins.dart';
+import 'package:cyberdriver/features/cars/details/cards/car_run.dart';
 import 'package:cyberdriver/shared/models/car_dto.dart';
 import 'package:flutter/material.dart';
 
@@ -253,6 +254,8 @@ class _CarDetailsCards extends StatelessWidget {
           power: dto.powerCurve,
           torque: dto.torqueCurve,
         ),
+        const SizedBox(height: 12),
+        CarRunCard(carId: dto.id),
         const SizedBox(height: 12),
         RecordsCarCard(carId: dto.id),
       ],

@@ -11,6 +11,7 @@ import 'package:cyberdriver/features/tracks/data/tracks_api.dart';
 import 'package:cyberdriver/features/tracks/details/cards/track_hello.dart';
 import 'package:cyberdriver/features/tracks/details/cards/track_props.dart';
 import 'package:cyberdriver/features/tracks/details/cards/track_records.dart';
+import 'package:cyberdriver/features/tracks/details/cards/track_run.dart';
 import 'package:cyberdriver/shared/models/track_dto.dart';
 import 'package:flutter/material.dart';
 
@@ -230,6 +231,8 @@ class _TrackDetailsCards extends StatelessWidget {
             descr: dto.description,
           ),
           const SizedBox(height: 12,),
+          TrackRunCard(trackId: dto.id),
+          const SizedBox(height: 12),
           RecordsTrackCard(trackId: dto.id,)
         ]
     );
