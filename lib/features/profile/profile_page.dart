@@ -3,6 +3,7 @@
 import 'dart:math';
 import 'package:cyberdriver/features/profile/cards/logout_card.dart';
 import 'package:cyberdriver/features/profile/cards/profile_card.dart';
+import 'package:cyberdriver/features/profile/cards/profile_sessions_card.dart';
 import 'package:cyberdriver/features/profile/cards/user_run_stat.dart';
 import 'package:flutter/material.dart';
 
@@ -181,6 +182,8 @@ class _ProfileGateState extends State<ProfileGate> {
         ),
         const SizedBox(height: 12),
         const UserRunStat(),
+        const SizedBox(height: 12),
+        const ProfileSessionsCard(),
         const SizedBox(height: 12),
         const LogoutCard(),
       ],
