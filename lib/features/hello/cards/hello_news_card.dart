@@ -31,6 +31,12 @@ class _HelloNewsCardState extends State<HelloNewsCard> {
     return page.data.first;
   }
 
+  void _retry() {
+    setState(() {
+      _future = _loadLatest();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<NewsDto?>(
@@ -41,7 +47,10 @@ class _HelloNewsCardState extends State<HelloNewsCard> {
         }
 
         if (snap.hasError) {
-          return _EmptyNewsCard(message: 'Ошибка загрузки: ${snap.error}');
+          return _EmptyNewsCard(
+            message: 'Ошибка загрузки новостей',
+            onRetry: _retry,
+          );
         }
 
         final news = snap.data;
@@ -78,9 +87,13 @@ class _LoadingNewsCard extends CardBase {
 }
 
 class _EmptyNewsCard extends CardBase {
-  const _EmptyNewsCard({required this.message});
+  const _EmptyNewsCard({
+    required this.message,
+    this.onRetry,
+  });
 
   final String message;
+  final VoidCallback? onRetry;
 
   @override
   Widget buildContent(BuildContext context) {
@@ -103,6 +116,13 @@ class _EmptyNewsCard extends CardBase {
         ),
         const SizedBox(height: 10),
         Text(message, style: textStyle),
+        if (onRetry != null) ...[
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: onRetry,
+            child: const Text('Повторить'),
+          ),
+        ],
       ],
     );
   }

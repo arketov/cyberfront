@@ -2,6 +2,7 @@ import 'package:cyberdriver/core/config/app_config.dart';
 import 'package:cyberdriver/core/network/network.dart';
 import 'package:cyberdriver/core/utils/logger.dart';
 import 'package:cyberdriver/app/app_router.dart';
+import 'package:cyberdriver/shared/models/user_dto.dart';
 
 import 'auth_session.dart';
 import 'auth_storage.dart';
@@ -127,5 +128,17 @@ class AuthService {
     }
     _session = null;
     await _storage.clear();
+  }
+
+  Future<void> updateSessionUser(UserDto user) async {
+    final session = _session;
+    if (session == null) return;
+    final updated = AuthSession(
+      accessToken: session.accessToken,
+      tokenType: session.tokenType,
+      user: user,
+    );
+    _session = updated;
+    await _storage.writeSession(updated);
   }
 }

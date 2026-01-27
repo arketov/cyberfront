@@ -3,12 +3,10 @@ import 'package:flutter/material.dart';
 
 import 'card_base.dart';
 
-abstract class CollapsibleCardBase extends CardBase {
-  CollapsibleCardBase({super.key, this.initialExpanded = false})
-      : _expanded = ValueNotifier<bool>(initialExpanded);
+abstract class CollapsibleCardBase extends StatefulWidget {
+  const CollapsibleCardBase({super.key, this.initialExpanded = false});
 
   final bool initialExpanded;
-  final ValueNotifier<bool> _expanded;
 
   String get kickerText;
   Color? get kickerColor => null;
@@ -17,57 +15,80 @@ abstract class CollapsibleCardBase extends CardBase {
   Widget buildExpandedContent(BuildContext context, bool expanded);
 
   @override
-  VoidCallback? onTap(BuildContext context) => () {
-        _expanded.value = !_expanded.value;
-      };
+  State<CollapsibleCardBase> createState() => _CollapsibleCardBaseState();
+}
+
+class _CollapsibleCardBaseState extends State<CollapsibleCardBase> {
+  late bool _expanded;
 
   @override
-  Widget buildContent(BuildContext context) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: _expanded,
-      builder: (context, expanded, _) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+  void initState() {
+    super.initState();
+    _expanded = widget.initialExpanded;
+  }
+
+  void _toggle() {
+    setState(() => _expanded = !_expanded);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final kickerColor = widget.kickerColor;
+    final toggleDuration = widget.toggleDuration;
+    final iconColor = (kickerColor ??
+            Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55))
+        .withValues(alpha: 0.9);
+
+    return _CollapsibleCardShell(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: _toggle,
+            child: Row(
               children: [
-                Kicker(kickerText, color: kickerColor),
+                Kicker(widget.kickerText, color: kickerColor),
                 const Spacer(),
                 AnimatedRotation(
-                  turns: expanded ? 0.5 : 0.0,
+                  turns: _expanded ? 0.5 : 0.0,
                   duration: toggleDuration,
                   curve: Curves.easeOutCubic,
                   child: Icon(
                     Icons.expand_more,
                     size: 18,
-                    color: (kickerColor ??
-                            Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withValues(alpha: 0.55))
-                        .withValues(alpha: 0.9),
+                    color: iconColor,
                   ),
                 ),
               ],
             ),
-            AnimatedSize(
-              duration: toggleDuration,
-              curve: Curves.easeOutCubic,
-              alignment: Alignment.topCenter,
-              child: ClipRect(
-                child: Align(
-                  alignment: Alignment.topCenter,
-                  heightFactor: expanded ? 1.0 : 0.0,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 10),
-                  child: buildExpandedContent(context, expanded),
+          ),
+          AnimatedSize(
+            duration: toggleDuration,
+            curve: Curves.easeOutCubic,
+            alignment: Alignment.topCenter,
+            child: ClipRect(
+              child: Align(
+                alignment: Alignment.topCenter,
+                heightFactor: _expanded ? 1.0 : 0.0,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: widget.buildExpandedContent(context, _expanded),
                 ),
               ),
             ),
-            ),
-          ],
-        );
-      },
+          ),
+        ],
+      ),
     );
   }
+}
+
+class _CollapsibleCardShell extends CardBase {
+  const _CollapsibleCardShell({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget buildContent(BuildContext context) => child;
 }

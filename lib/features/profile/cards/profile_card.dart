@@ -1,16 +1,24 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
 import 'package:cyberdriver/core/config/app_config.dart';
 import 'package:cyberdriver/core/media/media_cache_service.dart';
+import 'package:cyberdriver/core/theme/app_theme.dart';
 import 'package:cyberdriver/core/ui/cards/card_base.dart';
 import 'package:cyberdriver/core/ui/widgets/kicker.dart';
 import 'package:cyberdriver/core/ui/widgets/stat_donut.dart';
 import 'package:cyberdriver/core/ui/widgets/sub_card.dart';
+import 'package:cyberdriver/core/auth/auth_service.dart';
+import 'package:cyberdriver/core/network/api_client_provider.dart';
+import 'package:cyberdriver/features/profile/data/profile_user_api.dart';
 import 'package:cyberdriver/shared/models/user_dto.dart';
 import 'package:cyberdriver/shared/models/user_stats_dto.dart';
 import 'package:cyberdriver/shared/stats_descripton.dart';
+import 'package:crop_your_image/crop_your_image.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:image/image.dart' as img;
 
 const double _avatarSize = 64.0;
 const Duration _cacheDuration = Duration(days: 1);
@@ -34,16 +42,21 @@ class _ProfileCardState extends State<ProfileCard> {
   bool _loading = false;
   UserStatsDto? _stats;
   String? _statsError;
+  UserDto? _user;
 
   void _openEditDialog() {
-    final user = widget.user;
+    final user = _user ?? widget.user;
     if (user == null) return;
-    showDialog<void>(
+    showDialog<UserDto>(
       context: context,
       builder: (context) => _ProfileEditDialog(
-        initialName: user.name.isEmpty ? user.login : user.name,
+        user: user,
       ),
-    );
+    ).then((updatedUser) {
+      if (updatedUser != null && mounted) {
+        setState(() => _user = updatedUser);
+      }
+    });
   }
 
   void _toggleExpanded() {
@@ -86,7 +99,8 @@ class _ProfileCardState extends State<ProfileCard> {
   }
 
   Widget _buildContent(BuildContext context) {
-    if (widget.user == null) {
+    final currentUser = _user ?? widget.user;
+    if (currentUser == null) {
       return const Text('Нет данных пользователя');
     }
 
@@ -114,16 +128,68 @@ class _ProfileCardState extends State<ProfileCard> {
       color: Colors.white.withValues(alpha: 0.55),
     );
 
-    final user = widget.user!;
+    final user = currentUser;
     final displayName = user.name.isEmpty ? user.login : user.name;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        const Kicker('[ЭТО ТЫ]', color: Colors.white70),
+        const SizedBox(height: 10),
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Kicker('[ЭТО ТЫ]', color: Colors.white70),
-            const Spacer(),
+            Expanded(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _ProfileAvatar(
+                    imageHash: user.imageHash,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(displayName, style: titleStyle),
+                        const SizedBox(height: 4),
+                        _MetaLine(
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          span: TextSpan(
+                            children: [
+                              _kv(
+                                'LOGIN',
+                                user.login,
+                                metaLabelStyle,
+                                metaValueStyle,
+                              ),
+                              _dot(metaLabelStyle),
+                              _kv(
+                                'EMAIL',
+                                user.email,
+                                metaLabelStyle,
+                                metaValueStyle,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        _MetaLine(
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          span: TextSpan(
+                            children: [
+                              _kv('REGISTERED', '', metaLabelStyle, metaValueStyle),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
             IconButton(
               onPressed: _openEditDialog,
               icon: const Icon(Icons.settings),
@@ -131,56 +197,6 @@ class _ProfileCardState extends State<ProfileCard> {
               splashRadius: 18,
               color: Colors.white.withValues(alpha: 0.7),
               tooltip: 'Настройки профиля',
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _ProfileAvatar(
-              imageHash: user.imageHash,
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(displayName, style: titleStyle),
-                  const SizedBox(height: 4),
-                  _MetaLine(
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    span: TextSpan(
-                      children: [
-                        _kv(
-                          'LOGIN',
-                          user.login,
-                          metaLabelStyle,
-                          metaValueStyle,
-                        ),
-                        _dot(metaLabelStyle),
-                        _kv(
-                          'EMAIL',
-                          user.email,
-                          metaLabelStyle,
-                          metaValueStyle,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  _MetaLine(
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    span: TextSpan(
-                      children: [
-                        _kv('REGISTERED', '', metaLabelStyle, metaValueStyle),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
             ),
           ],
         ),
@@ -351,32 +367,130 @@ class _ProfileCardState extends State<ProfileCard> {
       ],
     );
   }
+
+  @override
+  void initState() {
+    super.initState();
+    _user = widget.user;
+  }
+
+  @override
+  void didUpdateWidget(covariant ProfileCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.user != null && widget.user != _user) {
+      _user = widget.user;
+    }
+  }
 }
 
 class _ProfileEditDialog extends StatefulWidget {
   const _ProfileEditDialog({
-    required this.initialName,
+    required this.user,
   });
 
-  final String initialName;
+  final UserDto user;
 
   @override
   State<_ProfileEditDialog> createState() => _ProfileEditDialogState();
 }
 
 class _ProfileEditDialogState extends State<_ProfileEditDialog> {
+  late final ProfileUserApi _api;
   late final TextEditingController _nameController;
+  Uint8List? _imageBytes;
+  bool _saving = false;
+  String? _error;
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.initialName);
+    _api = ProfileUserApi(createApiClient(AppConfig.dev));
+    _nameController = TextEditingController(
+      text: widget.user.name.isEmpty ? widget.user.login : widget.user.name,
+    );
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      withData: true,
+    );
+    if (result == null || result.files.isEmpty) return;
+
+    final file = result.files.single;
+    Uint8List? bytes = file.bytes;
+    if (bytes == null && file.path != null) {
+      bytes = await File(file.path!).readAsBytes();
+    }
+    if (bytes == null) return;
+
+    final cropped = await showDialog<Uint8List>(
+      context: context,
+      builder: (context) => _ImageCropDialog(bytes: bytes!),
+    );
+    if (cropped == null) return;
+
+    final resized = _resizeToSquare(cropped, 480);
+    setState(() => _imageBytes = resized);
+  }
+
+  Uint8List _resizeToSquare(Uint8List input, int size) {
+    final decoded = img.decodeImage(input);
+    if (decoded == null) return input;
+    final resized = img.copyResize(
+      decoded,
+      width: size,
+      height: size,
+      interpolation: img.Interpolation.average,
+    );
+    return Uint8List.fromList(img.encodeJpg(resized, quality: 90));
+  }
+
+  Future<void> _save() async {
+    final name = _nameController.text.trim();
+    if (name.isEmpty) {
+      setState(() => _error = 'Имя: обязательное поле');
+      return;
+    }
+
+    final nameChanged = name != widget.user.name && name != widget.user.login;
+    final imageChanged = _imageBytes != null;
+    if (!nameChanged && !imageChanged) {
+      Navigator.of(context).pop();
+      return;
+    }
+
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+
+    try {
+      final auth = await AuthService.getInstance();
+      UserDto updated = widget.user;
+      if (imageChanged) {
+        updated = await _api.uploadImageWithAuth(auth, _imageBytes!);
+      }
+      if (nameChanged) {
+        updated = await _api.updateProfileWithAuth(auth, name: name);
+      }
+      await auth.updateSessionUser(updated);
+      if (!mounted) return;
+      Navigator.of(context).pop(updated);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _error = 'Ошибка сохранения: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _saving = false);
+      }
+    }
   }
 
   @override
@@ -413,9 +527,6 @@ class _ProfileEditDialogState extends State<_ProfileEditDialog> {
               const SizedBox(height: 6),
               TextField(
                 controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: '[ИМЯ]',
-                ),
               ),
               const SizedBox(height: 14),
               Text(
@@ -440,10 +551,20 @@ class _ProfileEditDialogState extends State<_ProfileEditDialog> {
                         width: 1,
                       ),
                     ),
-                    child: Icon(
-                      Icons.person_outline,
-                      color: Colors.white.withValues(alpha: 0.5),
-                    ),
+                    child: _imageBytes == null
+                        ? Icon(
+                            Icons.person_outline,
+                            color: Colors.white.withValues(alpha: 0.5),
+                          )
+                        : ClipRRect(
+                            borderRadius: BorderRadius.circular(18),
+                            child: Image.memory(
+                              _imageBytes!,
+                              width: 72,
+                              height: 72,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -451,12 +572,12 @@ class _ProfileEditDialogState extends State<_ProfileEditDialog> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         OutlinedButton(
-                          onPressed: () {},
+                          onPressed: _saving ? null : _pickImage,
                           child: const Text('ВЫБРАТЬ ФОТО'),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'JPG/PNG, до 5MB',
+                          'JPG/PNG, квадрат, до 5MB',
                           style: textTheme.labelSmall?.copyWith(
                             fontWeight: FontWeight.w700,
                             color: Colors.white.withValues(alpha: 0.5),
@@ -467,6 +588,13 @@ class _ProfileEditDialogState extends State<_ProfileEditDialog> {
                   ),
                 ],
               ),
+              if (_error != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  _error!,
+                  style: textTheme.bodySmall?.copyWith(color: Colors.redAccent),
+                ),
+              ],
               const SizedBox(height: 18),
               Row(
                 children: [
@@ -479,12 +607,100 @@ class _ProfileEditDialogState extends State<_ProfileEditDialog> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: _saving ? null : _save,
                       style: ElevatedButton.styleFrom(
                         backgroundColor:
                             palette?.pink ?? Theme.of(context).colorScheme.primary,
                       ),
-                      child: const Text('СОХРАНИТЬ'),
+                      child: _saving
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('СОХРАНИТЬ'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ImageCropDialog extends StatefulWidget {
+  const _ImageCropDialog({required this.bytes});
+
+  final Uint8List bytes;
+
+  @override
+  State<_ImageCropDialog> createState() => _ImageCropDialogState();
+}
+
+class _ImageCropDialogState extends State<_ImageCropDialog> {
+  final CropController _controller = CropController();
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = Theme.of(context).extension<AppPalette>();
+    return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 520),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'КАДРИРОВАНИЕ',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.6,
+                      ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              AspectRatio(
+                aspectRatio: 1,
+                child: Crop(
+                  controller: _controller,
+                  image: widget.bytes,
+                  aspectRatio: 1,
+                  withCircleUi: false,
+                  onCropped: (result) {
+                    switch (result) {
+                      case CropSuccess(:final croppedImage):
+                        Navigator.of(context).pop(croppedImage);
+                      case CropFailure():
+                        Navigator.of(context).pop();
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('ОТМЕНА'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _controller.crop,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            palette?.pink ?? Theme.of(context).colorScheme.primary,
+                      ),
+                      child: const Text('ОБРЕЗАТЬ'),
                     ),
                   ),
                 ],
