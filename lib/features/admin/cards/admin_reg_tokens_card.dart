@@ -12,7 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class AdminRegTokensCard extends CollapsibleCardBase {
-  AdminRegTokensCard({super.key});
+  const AdminRegTokensCard({super.key});
 
   @override
   String get kickerText => '[РЕГ ТОКЕНЫ]';
@@ -478,7 +478,8 @@ class _TokensList extends StatelessWidget {
             controller: controller,
             padding: EdgeInsets.zero,
             itemCount: items.length + (isLoadingMore ? 1 : 0),
-            separatorBuilder: (_, __) => const SizedBox(height: 8),
+            separatorBuilder: (context, index) =>
+                const SizedBox(height: 8),
             itemBuilder: (context, i) {
               if (i >= items.length) {
               return Padding(

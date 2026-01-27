@@ -36,10 +36,10 @@ final class AppNotificationController extends ChangeNotifier {
   static final AppNotificationController instance =
       AppNotificationController._();
 
-  final List<_NotificationItem> _items = [];
+  final List<AppNotificationItem> _items = [];
   int _nextId = 0;
 
-  List<_NotificationItem> get items => List.unmodifiable(_items);
+  List<AppNotificationItem> get items => List.unmodifiable(_items);
 
   void show({
     required String message,
@@ -49,7 +49,7 @@ final class AppNotificationController extends ChangeNotifier {
     final text = message.trim();
     if (text.isEmpty) return;
 
-    final item = _NotificationItem(
+    final item = AppNotificationItem(
       id: _nextId++,
       message: text,
       tone: tone,
@@ -110,8 +110,8 @@ class AppNotificationHost extends StatelessWidget {
   }
 }
 
-class _NotificationItem {
-  _NotificationItem({
+class AppNotificationItem {
+  AppNotificationItem({
     required this.id,
     required this.message,
     required this.tone,
@@ -130,7 +130,7 @@ const Duration _exitDuration = Duration(milliseconds: 180);
 class _NotificationToast extends StatelessWidget {
   const _NotificationToast({required this.item});
 
-  final _NotificationItem item;
+  final AppNotificationItem item;
 
   @override
   Widget build(BuildContext context) {

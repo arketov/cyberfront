@@ -40,7 +40,7 @@ class AdminPage extends BasePage {
   @override
   List<Widget> buildBlocks(BuildContext context) => [
         const _AdminPlaceholderCard(),
-        AdminNewsFormCard(),
+        const AdminNewsFormCard(),
         AdminRegTokensCard(),
         AdminActiveSessionsCard(),
       ];

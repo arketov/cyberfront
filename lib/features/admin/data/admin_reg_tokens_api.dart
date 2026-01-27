@@ -60,7 +60,7 @@ class AdminRegTokensApi {
           'reg_token': regToken,
           'descr': descr,
         },
-        parse: (_) => null,
+        parse: (_) {},
       );
     });
   }
@@ -74,7 +74,7 @@ class AdminRegTokensApi {
       await _client.delete<void>(
         'auth/reg-tokens/$safeToken',
         headers: {'Authorization': 'Bearer $token'},
-        parse: (_) => null,
+        parse: (_) {},
       );
     });
   }

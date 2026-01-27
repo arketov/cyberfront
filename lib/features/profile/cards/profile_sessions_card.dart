@@ -240,7 +240,6 @@ class _SessionItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final metaStyle = TextStyle(
       fontSize: 12,
       fontWeight: FontWeight.w700,

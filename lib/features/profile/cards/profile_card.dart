@@ -434,6 +434,7 @@ class _ProfileEditDialogState extends State<_ProfileEditDialog> {
       context: context,
       builder: (context) => _ImageCropDialog(bytes: bytes!),
     );
+    if (!mounted) return;
     if (cropped == null) return;
 
     final resized = _resizeToSquare(cropped, 480);

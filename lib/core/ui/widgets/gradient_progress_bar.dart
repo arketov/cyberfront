@@ -28,7 +28,7 @@ class GradientProgressBar extends StatelessWidget {
     final start = gradientStart ?? palette?.blue ?? const Color(0xFF083BFF);
     final end = gradientEnd ?? palette?.pink ?? const Color(0xFFFF2BD6);
     final bg = backgroundColor ?? palette?.line ?? Colors.white24;
-    final progress = (value.clamp(0, 100) as num).toDouble() / 100.0;
+    final progress = value.clamp(0.0, 100.0) / 100.0;
 
     return SizedBox(
       height: height,

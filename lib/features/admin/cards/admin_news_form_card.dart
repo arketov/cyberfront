@@ -11,7 +11,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 class AdminNewsFormCard extends CollapsibleCardBase {
-  AdminNewsFormCard({super.key});
+  const AdminNewsFormCard({super.key});
 
   @override
   String get kickerText => '[ДОБАВИТЬ НОВОСТЬ]';

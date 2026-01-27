@@ -142,7 +142,7 @@ class FavoriteRunCard extends StatelessWidget {
     if (minutes <= 0) return '0М';
     final hours = minutes ~/ 60;
     final mins = minutes % 60;
-    if (hours <= 0) return '${mins}М';
-    return '$hoursЧ ${mins}М';
+    if (hours <= 0) return '$minsМ';
+    return '$hoursЧ $minsМ';
   }
 }

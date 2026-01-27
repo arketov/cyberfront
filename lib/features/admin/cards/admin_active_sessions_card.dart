@@ -15,7 +15,7 @@ import 'package:cyberdriver/shared/models/track_dto.dart';
 import 'package:flutter/material.dart';
 
 class AdminActiveSessionsCard extends CollapsibleCardBase {
-  AdminActiveSessionsCard({super.key});
+  const AdminActiveSessionsCard({super.key});
 
   @override
   String get kickerText => '[КОКПИТЫ]';
@@ -428,7 +428,8 @@ class _SessionsList extends StatelessWidget {
       child: ListView.separated(
         padding: EdgeInsets.zero,
         itemCount: sessions.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 8),
+        separatorBuilder: (context, index) =>
+            const SizedBox(height: 8),
         itemBuilder: (context, i) {
           final s = sessions[i];
           final user = users[s.userId];

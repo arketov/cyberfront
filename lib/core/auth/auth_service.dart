@@ -63,7 +63,7 @@ class AuthService {
         'reg_token': regToken,
         'name': name,
       },
-      parse: (_) => null,
+      parse: (_) {},
     );
   }
 

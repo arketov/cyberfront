@@ -352,7 +352,6 @@ class _NewsCardContentState extends State<_NewsCardContent> {
 
 class _CollapsedBody extends StatelessWidget {
   const _CollapsedBody({
-    super.key,
     required this.excerpt,
     required this.textStyle,
   });
@@ -397,7 +396,6 @@ class _EmptyNewsState extends StatelessWidget {
 
 class _ExpandedBody extends StatelessWidget {
   const _ExpandedBody({
-    super.key,
     required this.hashes,
     required this.markdown,
     required this.loading,
