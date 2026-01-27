@@ -225,102 +225,127 @@ class _NewsCardContentState extends State<_NewsCardContent> {
       ),
     ];
 
-    return AnimatedSize(
-      duration: const Duration(milliseconds: 240),
-      curve: Curves.easeInOut,
-      child: Stack(
-        children: [
-          if (!_expanded && hasCollapsedImage)
-            Positioned.fill(
-              child: AnimatedOpacity(
-                opacity: _expanded ? 0 : 1,
-                duration: const Duration(milliseconds: 200),
-                child: _NewsBackground(hash: collapsedImages.first),
-              ),
-            ),
-          GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: _toggle,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    if (widget.showKicker) ...[
-                      const Kicker('[НОВОСТИ]'),
-                      const Spacer(),
-                    ] else ...[
-                      const Spacer(),
-                    ],
-                    if (widget.onAllTap != null)
-                      _PillButton(
-                        label: 'ВСЕ',
-                        icon: Icons.arrow_forward_rounded,
-                        tone: Colors.white.withValues(alpha: 0.10),
-                        textColor: Colors.white.withValues(alpha: 0.85),
-                        onTap: widget.onAllTap,
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 10,
-                      height: 10,
-                      margin: const EdgeInsets.only(top: 6),
-                      decoration: BoxDecoration(
-                        color: accent,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        widget.news.title,
-                        style: titleStyle,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 6,
-                  children: metaItems,
-                ),
-                const SizedBox(height: 12),
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 200),
-                  switchInCurve: Curves.easeOut,
-                  switchOutCurve: Curves.easeIn,
-                  child: _expanded
-                      ? _ExpandedBody(
-                          key: const ValueKey('expanded'),
-                          hashes: expandedImages,
-                          markdown: body,
-                          loading: _detailLoading,
-                        )
-                      : _CollapsedBody(
-                          key: const ValueKey('collapsed'),
-                          excerpt: _excerpt(body, 100),
-                          textStyle: descStyle,
-                        ),
-                ),
-                if (_expanded && isAdmin) ...[
-                  const SizedBox(height: 12),
-                  _DeleteButton(
-                    onPressed: _deleting ? null : _handleDelete,
-                    loading: _deleting,
-                  ),
-                ],
-              ],
+    return Stack(
+      children: [
+        if (hasCollapsedImage)
+          Positioned.fill(
+            child: AnimatedOpacity(
+              opacity: _expanded ? 0 : 1,
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOutCubic,
+              child: _NewsBackground(hash: collapsedImages.first),
             ),
           ),
-        ],
-      ),
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: _toggle,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  if (widget.showKicker) ...[
+                    const Kicker('[НОВОСТИ]'),
+                    const Spacer(),
+                  ] else ...[
+                    const Spacer(),
+                  ],
+                  if (widget.onAllTap != null)
+                    _PillButton(
+                      label: 'ВСЕ',
+                      icon: Icons.arrow_forward_rounded,
+                      tone: Colors.white.withValues(alpha: 0.10),
+                      textColor: Colors.white.withValues(alpha: 0.85),
+                      onTap: widget.onAllTap,
+                    ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 10,
+                    height: 10,
+                    margin: const EdgeInsets.only(top: 6),
+                    decoration: BoxDecoration(
+                      color: accent,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      widget.news.title,
+                      style: titleStyle,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 12,
+                runSpacing: 6,
+                children: metaItems,
+              ),
+              const SizedBox(height: 12),
+              TweenAnimationBuilder<double>(
+                tween: Tween<double>(begin: 0, end: _expanded ? 1 : 0),
+                duration: const Duration(milliseconds: 260),
+                curve: Curves.easeInOutCubic,
+                builder: (context, t, _) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRect(
+                        child: Align(
+                          alignment: Alignment.topLeft,
+                          heightFactor: 1 - t,
+                          child: IgnorePointer(
+                            ignoring: _expanded,
+                            child: Opacity(
+                              opacity: 1 - t,
+                              child: _CollapsedBody(
+                                excerpt: _excerpt(body, 100),
+                                textStyle: descStyle,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      ClipRect(
+                        child: Align(
+                          alignment: Alignment.topLeft,
+                          heightFactor: t,
+                          child: IgnorePointer(
+                            ignoring: !_expanded,
+                            child: Opacity(
+                              opacity: t,
+                              child: _ExpandedBody(
+                                hashes: expandedImages,
+                                markdown: body,
+                                loading: _detailLoading,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+              if (_expanded && isAdmin) ...[
+                const SizedBox(height: 12),
+                _DeleteButton(
+                  onPressed: _deleting ? null : _handleDelete,
+                  loading: _deleting,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -706,7 +731,7 @@ class _NewsBackground extends StatelessWidget {
   }
 }
 
-class _CachedImage extends StatelessWidget {
+class _CachedImage extends StatefulWidget {
   const _CachedImage({
     required this.hash,
     required this.fit,
@@ -717,11 +742,33 @@ class _CachedImage extends StatelessWidget {
   final BoxFit fit;
   final Gradient overlay;
 
+  @override
+  State<_CachedImage> createState() => _CachedImageState();
+}
+
+class _CachedImageState extends State<_CachedImage> {
+  late Future<File> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = _load();
+  }
+
+  @override
+  void didUpdateWidget(covariant _CachedImage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.hash != widget.hash) {
+      _future = _load();
+    }
+  }
+
   Future<File> _load() {
-    if (hash.trim().isEmpty) {
+    if (widget.hash.trim().isEmpty) {
       return Future.error('empty');
     }
-    return MediaCacheService.instance.getImageFile(id: hash, forceRefresh: false);
+    return MediaCacheService.instance
+        .getImageFile(id: widget.hash, forceRefresh: false);
   }
 
   @override
@@ -729,14 +776,14 @@ class _CachedImage extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return FutureBuilder<File>(
-      future: _load(),
+      future: _future,
       builder: (context, snap) {
         if (snap.connectionState == ConnectionState.done && snap.hasData) {
           return Stack(
             fit: StackFit.expand,
             children: [
-              Image.file(snap.data!, fit: fit),
-              DecoratedBox(decoration: BoxDecoration(gradient: overlay)),
+              Image.file(snap.data!, fit: widget.fit),
+              DecoratedBox(decoration: BoxDecoration(gradient: widget.overlay)),
             ],
           );
         }
