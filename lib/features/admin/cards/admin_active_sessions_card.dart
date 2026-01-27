@@ -41,7 +41,8 @@ class _AdminActiveSessionsContent extends StatefulWidget {
 class _AdminActiveSessionsContentState
     extends State<_AdminActiveSessionsContent> {
   static const double _listHeight = 280;
-  static const Duration _pollInterval = Duration(seconds: 5);
+  static const Duration _pollIdleInterval = Duration(minutes: 1);
+  static const Duration _pollActiveInterval = Duration(seconds: 10);
 
   late final AdminActiveSessionsApi _api;
   late final CarsApi _carsApi;
@@ -107,12 +108,19 @@ class _AdminActiveSessionsContentState
       return;
     }
     _refresh();
-    _pollTimer = Timer.periodic(_pollInterval, (_) => _refresh());
   }
 
   void _stopPolling() {
     _pollTimer?.cancel();
     _pollTimer = null;
+  }
+
+  void _scheduleNext(Duration delay) {
+    _pollTimer?.cancel();
+    _pollTimer = Timer(delay, () {
+      if (!mounted) return;
+      _refresh();
+    });
   }
 
   Future<void> _refresh() async {
@@ -138,12 +146,16 @@ class _AdminActiveSessionsContentState
         _loading = false;
       });
       await _ensureDetails(sessions);
+      _scheduleNext(
+        _sessions.isNotEmpty ? _pollActiveInterval : _pollIdleInterval,
+      );
     } catch (_) {
       if (!mounted) return;
       setState(() {
         _loading = false;
         _error = 'Ошибка загрузки сессий';
       });
+      _scheduleNext(_pollIdleInterval);
     }
   }
 
