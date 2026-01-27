@@ -5,6 +5,7 @@ import 'package:cyberdriver/core/ui/base_page.dart';
 import 'package:cyberdriver/core/ui/cards/card_base.dart';
 import 'package:cyberdriver/core/ui/widgets/infinite_ticker.dart';
 import 'package:cyberdriver/core/ui/widgets/kicker.dart';
+import 'package:cyberdriver/features/admin/cards/admin_active_sessions_card.dart';
 import 'package:cyberdriver/features/admin/cards/admin_news_form_card.dart';
 import 'package:cyberdriver/features/admin/cards/admin_reg_tokens_card.dart';
 import 'package:flutter/material.dart';
@@ -41,6 +42,7 @@ class AdminPage extends BasePage {
         const _AdminPlaceholderCard(),
         AdminNewsFormCard(),
         AdminRegTokensCard(),
+        AdminActiveSessionsCard(),
       ];
 }
 
