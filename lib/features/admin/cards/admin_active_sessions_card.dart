@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:cyberdriver/core/auth/auth_service.dart';
@@ -13,6 +14,7 @@ import 'package:cyberdriver/features/tracks/data/tracks_api.dart';
 import 'package:cyberdriver/shared/models/car_dto.dart';
 import 'package:cyberdriver/shared/models/track_dto.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AdminActiveSessionsCard extends CollapsibleCardBase {
   const AdminActiveSessionsCard({super.key});
@@ -39,10 +41,13 @@ class _AdminActiveSessionsContent extends StatefulWidget {
 }
 
 class _AdminActiveSessionsContentState
-    extends State<_AdminActiveSessionsContent> {
+    extends State<_AdminActiveSessionsContent> with WidgetsBindingObserver {
   static const double _listHeight = 280;
   static const Duration _pollIdleInterval = Duration(minutes: 1);
   static const Duration _pollActiveInterval = Duration(seconds: 10);
+  static const Duration _timerTickInterval = Duration(milliseconds: 100);
+  static const String _sessionsCacheKey = 'admin_active_sessions_cache_v1';
+  static const String _timerCacheKey = 'admin_active_sessions_timer_v1';
 
   late final AdminActiveSessionsApi _api;
   late final CarsApi _carsApi;
@@ -50,10 +55,16 @@ class _AdminActiveSessionsContentState
 
   AuthService? _auth;
   bool _authReady = false;
+  SharedPreferences? _prefs;
+  bool _prefsReady = false;
   Timer? _pollTimer;
   bool _loading = false;
   String? _error;
   int _officeIndex = 0;
+  _TimerMode _timerMode = _TimerMode.group;
+  _TimerSnapshot _groupTimer = const _TimerSnapshot();
+  _TimerSnapshot _enduranceTimer = const _TimerSnapshot();
+  Timer? _timerTicker;
 
   final List<ActiveSessionDto> _sessions = [];
   final Map<String, int> _carIdByExternal = {};
@@ -68,6 +79,8 @@ class _AdminActiveSessionsContentState
     _api = AdminActiveSessionsApi(createApiClient(AppConfig.dev));
     _carsApi = CarsApi(createApiClient(AppConfig.dev));
     _tracksApi = TracksApi(createApiClient(AppConfig.dev));
+    WidgetsBinding.instance.addObserver(this);
+    _initPrefs();
     _initAuth();
   }
 
@@ -84,7 +97,18 @@ class _AdminActiveSessionsContentState
   @override
   void dispose() {
     _stopPolling();
+    _stopTimerTicker();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.detached) {
+      _persistTimerState();
+    }
   }
 
   Future<void> _initAuth() async {
@@ -98,6 +122,15 @@ class _AdminActiveSessionsContentState
     if (widget.active) {
       _startPolling(forceRefresh: true);
     }
+  }
+
+  Future<void> _initPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    _prefs = prefs;
+    _prefsReady = true;
+    _restoreTimerState();
+    _loadSessionsCacheForOffice(_officeIndex);
   }
 
   void _startPolling({bool forceRefresh = false}) {
@@ -123,6 +156,172 @@ class _AdminActiveSessionsContentState
     });
   }
 
+  _TimerSnapshot get _activeTimer =>
+      _timerMode == _TimerMode.group ? _groupTimer : _enduranceTimer;
+
+  void _setTimerMode(_TimerMode mode) {
+    if (_timerMode == mode) return;
+    setState(() => _timerMode = mode);
+    if (_activeTimer.state == _TimerState.running) {
+      _startTimerTicker();
+    } else {
+      _stopTimerTicker();
+    }
+  }
+
+  void _startTimer() {
+    final timer = _activeTimer;
+    if (timer.state == _TimerState.running) return;
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final updated = timer.copyWith(
+      state: _TimerState.running,
+      startAtMs: now,
+    );
+    _setActiveTimer(updated);
+    _startTimerTicker();
+    _persistTimerState();
+  }
+
+  void _pauseTimer() {
+    final timer = _activeTimer;
+    if (timer.state != _TimerState.running) return;
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final elapsedMs = timer.elapsedAt(now);
+    _setActiveTimer(
+      timer.copyWith(
+        state: _TimerState.paused,
+        elapsedMs: elapsedMs,
+        startAtMs: 0,
+      ),
+    );
+    _stopTimerTicker();
+    _persistTimerState();
+  }
+
+  void _resetTimer() {
+    _setActiveTimer(const _TimerSnapshot());
+    _stopTimerTicker();
+    _persistTimerState();
+  }
+
+  void _saveTimer() {
+    _resetTimer();
+  }
+
+  void _startTimerTicker() {
+    _timerTicker?.cancel();
+    _timerTicker = Timer.periodic(_timerTickInterval, (_) {
+      if (!mounted || _activeTimer.state != _TimerState.running) return;
+      setState(() {});
+    });
+  }
+
+  void _stopTimerTicker() {
+    _timerTicker?.cancel();
+    _timerTicker = null;
+  }
+
+  String _formatElapsed(Duration duration) {
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60);
+    final seconds = duration.inSeconds.remainder(60);
+    final centiseconds = duration.inMilliseconds.remainder(1000) ~/ 10;
+    String two(int v) => v.toString().padLeft(2, '0');
+    return '${two(hours)}:${two(minutes)}:${two(seconds)}.${two(centiseconds)}';
+  }
+
+  void _setActiveTimer(_TimerSnapshot snapshot) {
+    setState(() {
+      if (_timerMode == _TimerMode.group) {
+        _groupTimer = snapshot;
+      } else {
+        _enduranceTimer = snapshot;
+      }
+    });
+  }
+
+  void _restoreTimerState() {
+    if (!_prefsReady) return;
+    final raw = _prefs?.getString(_timerCacheKey);
+    if (raw == null || raw.isEmpty) return;
+    try {
+      final json = jsonDecode(raw);
+      if (json is! Map<String, dynamic>) return;
+      final groupJson = json['group'];
+      final enduranceJson = json['endurance'];
+      setState(() {
+        _groupTimer = _TimerSnapshot.fromJson(groupJson);
+        _enduranceTimer = _TimerSnapshot.fromJson(enduranceJson);
+      });
+      if (_activeTimer.state == _TimerState.running) {
+        _startTimerTicker();
+      }
+    } catch (_) {}
+  }
+
+  void _persistTimerState() {
+    if (!_prefsReady) return;
+    final payload = <String, dynamic>{
+      'group': _groupTimer.toJson(),
+      'endurance': _enduranceTimer.toJson(),
+    };
+    _prefs?.setString(_timerCacheKey, jsonEncode(payload));
+  }
+
+  void _persistSessionsCache(String appToken, List<ActiveSessionDto> sessions) {
+    if (!_prefsReady) return;
+    final raw = _prefs?.getString(_sessionsCacheKey);
+    Map<String, dynamic> payload = {};
+    if (raw != null && raw.isNotEmpty) {
+      try {
+        final json = jsonDecode(raw);
+        if (json is Map<String, dynamic>) payload = json;
+      } catch (_) {}
+    }
+    payload[appToken] = sessions.map(_sessionToJson).toList();
+    _prefs?.setString(_sessionsCacheKey, jsonEncode(payload));
+  }
+
+  void _loadSessionsCacheForOffice(int officeIndex) {
+    if (!_prefsReady) return;
+    final offices = AppConfig.dev.offices;
+    if (offices.isEmpty) return;
+    final safeIndex = officeIndex.clamp(0, offices.length - 1);
+    final appToken = offices[safeIndex].appToken;
+    final raw = _prefs?.getString(_sessionsCacheKey);
+    if (raw == null || raw.isEmpty) return;
+    try {
+      final json = jsonDecode(raw);
+      if (json is! Map) return;
+      final list = json[appToken];
+      if (list is! List) return;
+      final sessions = list
+          .whereType<Map>()
+          .map((e) => ActiveSessionDto.fromJson(
+                Map<String, dynamic>.from(e),
+              ))
+          .toList();
+      if (!mounted) return;
+      setState(() {
+        _sessions
+          ..clear()
+          ..addAll(sessions);
+      });
+      final auth = _auth;
+      if (auth != null) {
+        _ensureDetails(sessions);
+      }
+    } catch (_) {}
+  }
+
+  Map<String, dynamic> _sessionToJson(ActiveSessionDto s) => {
+        'external_car_id': s.externalCarId,
+        'external_track_id': s.externalTrackId,
+        'assistant_token': s.assistantToken,
+        'user_id': s.userId,
+        'beat_at_utc': s.beatAtUtc,
+      };
+
   Future<void> _refresh() async {
     if (_loading) return;
     final auth = _auth;
@@ -145,6 +344,7 @@ class _AdminActiveSessionsContentState
           ..addAll(sessions);
         _loading = false;
       });
+      _persistSessionsCache(appToken, sessions);
       await _ensureDetails(sessions);
       _scheduleNext(
         _sessions.isNotEmpty ? _pollActiveInterval : _pollIdleInterval,
@@ -226,6 +426,7 @@ class _AdminActiveSessionsContentState
       _users.clear();
       _error = null;
     });
+    _loadSessionsCacheForOffice(index);
     _refresh();
   }
 
@@ -303,7 +504,158 @@ class _AdminActiveSessionsContentState
           carName: _carName,
           onRetry: _refresh,
         ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            MetaPill(
+              value: 'ГРУППОВЫЕ',
+              tone: _timerMode == _TimerMode.group
+                  ? MetaPillTone.pink
+                  : MetaPillTone.dark,
+              clickable: true,
+              onTap: () => _setTimerMode(_TimerMode.group),
+            ),
+            MetaPill(
+              value: 'ВЫНОСЛИВОСТЬ',
+              tone: _timerMode == _TimerMode.endurance
+                  ? MetaPillTone.pink
+                  : MetaPillTone.dark,
+              clickable: true,
+              onTap: () => _setTimerMode(_TimerMode.endurance),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Container(
+          height: 64,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: Colors.white.withValues(alpha: 0.04),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.12),
+              width: 1,
+            ),
+          ),
+          child: Text(
+            _formatElapsed(
+              Duration(milliseconds: _activeTimer.elapsedAt(
+                DateTime.now().millisecondsSinceEpoch,
+              )),
+            ),
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.2,
+              color: Colors.white.withValues(alpha: 0.92),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        if (_activeTimer.state == _TimerState.idle)
+          SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: ElevatedButton(
+              onPressed: _startTimer,
+              child: const Text('СТАРТ'),
+            ),
+          )
+        else if (_activeTimer.state == _TimerState.running)
+          SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: ElevatedButton(
+              onPressed: _pauseTimer,
+              child: const Text('ПАУЗА'),
+            ),
+          )
+        else
+          Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 44,
+                  child: ElevatedButton(
+                    onPressed: _resetTimer,
+                    child: const Text('СБРОС'),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: SizedBox(
+                  height: 44,
+                  child: ElevatedButton(
+                    onPressed: _saveTimer,
+                    child: const Text('СОХРАНИТЬ'),
+                  ),
+                ),
+              ),
+            ],
+          ),
       ],
+    );
+  }
+}
+
+enum _TimerMode { group, endurance }
+
+enum _TimerState { idle, running, paused }
+
+@immutable
+class _TimerSnapshot {
+  const _TimerSnapshot({
+    this.state = _TimerState.idle,
+    this.elapsedMs = 0,
+    this.startAtMs = 0,
+  });
+
+  final _TimerState state;
+  final int elapsedMs;
+  final int startAtMs;
+
+  int elapsedAt(int nowMs) {
+    if (state != _TimerState.running) return elapsedMs;
+    final delta = nowMs - startAtMs;
+    if (delta <= 0) return elapsedMs;
+    return elapsedMs + delta;
+  }
+
+  _TimerSnapshot copyWith({
+    _TimerState? state,
+    int? elapsedMs,
+    int? startAtMs,
+  }) {
+    return _TimerSnapshot(
+      state: state ?? this.state,
+      elapsedMs: elapsedMs ?? this.elapsedMs,
+      startAtMs: startAtMs ?? this.startAtMs,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'state': state.name,
+        'elapsedMs': elapsedMs,
+        'startAtMs': startAtMs,
+      };
+
+  static _TimerSnapshot fromJson(Object? raw) {
+    if (raw is! Map) return const _TimerSnapshot();
+    final map = Map<String, dynamic>.from(raw);
+    final stateRaw = map['state']?.toString() ?? 'idle';
+    final state = _TimerState.values.firstWhere(
+      (s) => s.name == stateRaw,
+      orElse: () => _TimerState.idle,
+    );
+    final elapsedMs = map['elapsedMs'];
+    final startAtMs = map['startAtMs'];
+    return _TimerSnapshot(
+      state: state,
+      elapsedMs: elapsedMs is int ? elapsedMs : 0,
+      startAtMs: startAtMs is int ? startAtMs : 0,
     );
   }
 }
