@@ -7,8 +7,10 @@ import 'package:cyberdriver/core/config/app_config.dart';
 import 'package:cyberdriver/core/media/media_cache_service.dart';
 import 'package:cyberdriver/core/network/api_client_provider.dart';
 import 'package:cyberdriver/core/ui/cards/collapsible_card_base.dart';
+import 'package:cyberdriver/core/ui/widgets/app_notifications.dart';
 import 'package:cyberdriver/core/ui/widgets/track_meta_pills.dart';
 import 'package:cyberdriver/features/admin/data/admin_active_sessions_api.dart';
+import 'package:cyberdriver/features/admin/data/admin_records_api.dart';
 import 'package:cyberdriver/features/cars/data/cars_api.dart';
 import 'package:cyberdriver/features/tracks/data/tracks_api.dart';
 import 'package:cyberdriver/shared/models/car_dto.dart';
@@ -50,6 +52,7 @@ class _AdminActiveSessionsContentState
   static const String _timerCacheKey = 'admin_active_sessions_timer_v1';
 
   late final AdminActiveSessionsApi _api;
+  late final AdminRecordsApi _recordsApi;
   late final CarsApi _carsApi;
   late final TracksApi _tracksApi;
 
@@ -59,6 +62,7 @@ class _AdminActiveSessionsContentState
   bool _prefsReady = false;
   Timer? _pollTimer;
   bool _loading = false;
+  bool _savingRecord = false;
   String? _error;
   int _officeIndex = 0;
   _TimerMode _timerMode = _TimerMode.group;
@@ -77,6 +81,7 @@ class _AdminActiveSessionsContentState
   void initState() {
     super.initState();
     _api = AdminActiveSessionsApi(createApiClient(AppConfig.dev));
+    _recordsApi = AdminRecordsApi(createApiClient(AppConfig.dev));
     _carsApi = CarsApi(createApiClient(AppConfig.dev));
     _tracksApi = TracksApi(createApiClient(AppConfig.dev));
     WidgetsBinding.instance.addObserver(this);
@@ -205,7 +210,7 @@ class _AdminActiveSessionsContentState
   }
 
   void _saveTimer() {
-    _resetTimer();
+    _saveRecord();
   }
 
   void _startTimerTicker() {
@@ -228,6 +233,105 @@ class _AdminActiveSessionsContentState
     final centiseconds = duration.inMilliseconds.remainder(1000) ~/ 10;
     String two(int v) => v.toString().padLeft(2, '0');
     return '${two(hours)}:${two(minutes)}:${two(seconds)}.${two(centiseconds)}';
+  }
+
+  _RecordDraft? _buildRecordDraft({int? nowMs}) {
+    if (_sessions.isEmpty) return null;
+    final now = nowMs ?? DateTime.now().millisecondsSinceEpoch;
+    final elapsedMs = _activeTimer.elapsedAt(now);
+    if (elapsedMs <= 0) return null;
+
+    final trackCounts = <int, int>{};
+    for (final s in _sessions) {
+      final trackId = _trackIdByExternal[s.externalTrackId];
+      if (trackId == null || trackId <= 0) {
+        return null;
+      }
+      trackCounts[trackId] = (trackCounts[trackId] ?? 0) + 1;
+    }
+    if (trackCounts.isEmpty) return null;
+
+    var majorityTrackId = 0;
+    var majorityCount = -1;
+    trackCounts.forEach((trackId, count) {
+      if (count > majorityCount) {
+        majorityCount = count;
+        majorityTrackId = trackId;
+      }
+    });
+    if (majorityTrackId <= 0) return null;
+
+    final participants = <AdminRecordParticipant>[];
+    for (final s in _sessions) {
+      final trackId = _trackIdByExternal[s.externalTrackId];
+      if (trackId != majorityTrackId) continue;
+      final carId = _carIdByExternal[s.externalCarId];
+      if (carId == null || carId <= 0) {
+        return null;
+      }
+      if (s.userId <= 0) {
+        return null;
+      }
+      participants.add(AdminRecordParticipant(userId: s.userId, carId: carId));
+    }
+    if (participants.isEmpty) return null;
+
+    final lapTimeSeconds = elapsedMs / 1000.0;
+    final durationHours = (lapTimeSeconds / 3600).ceil().toDouble();
+    return _RecordDraft(
+      trackId: majorityTrackId,
+      lapTimeSeconds: lapTimeSeconds,
+      durationHours: durationHours,
+      participants: participants,
+    );
+  }
+
+  Future<void> _saveRecord() async {
+    if (_savingRecord) return;
+    final auth = _auth;
+    if (auth == null || auth.session == null) {
+      AppNotifications.error('Нет авторизации для сохранения рекорда');
+      return;
+    }
+
+    final draft = _buildRecordDraft();
+    if (draft == null) {
+      AppNotifications.error('Данные ещё загружаются');
+      return;
+    }
+
+    setState(() => _savingRecord = true);
+    try {
+      if (_timerMode == _TimerMode.group) {
+        await _recordsApi.createGroupRecordWithAuth(
+          auth: auth,
+          trackId: draft.trackId,
+          lapTimeSeconds: draft.lapTimeSeconds,
+          minMassPowerRatio: 0,
+          participants: draft.participants,
+        );
+      } else {
+        await _recordsApi.createGroupDurationRecordWithAuth(
+          auth: auth,
+          trackId: draft.trackId,
+          durationHours: draft.durationHours,
+          lapTimeSeconds: draft.lapTimeSeconds,
+          className: 'duration',
+          trackDuration: 0,
+          participants: draft.participants,
+        );
+      }
+      if (!mounted) return;
+      AppNotifications.show('Рекорд сохранён');
+      _resetTimer();
+    } catch (e) {
+      if (!mounted) return;
+      AppNotifications.error('Ошибка сохранения рекорда');
+    } finally {
+      if (mounted) {
+        setState(() => _savingRecord = false);
+      }
+    }
   }
 
   void _setActiveTimer(_TimerSnapshot snapshot) {
@@ -559,7 +663,7 @@ class _AdminActiveSessionsContentState
             width: double.infinity,
             height: 44,
             child: ElevatedButton(
-              onPressed: _startTimer,
+              onPressed: _savingRecord ? null : _startTimer,
               child: const Text('СТАРТ'),
             ),
           )
@@ -568,7 +672,7 @@ class _AdminActiveSessionsContentState
             width: double.infinity,
             height: 44,
             child: ElevatedButton(
-              onPressed: _pauseTimer,
+              onPressed: _savingRecord ? null : _pauseTimer,
               child: const Text('ПАУЗА'),
             ),
           )
@@ -579,7 +683,7 @@ class _AdminActiveSessionsContentState
                 child: SizedBox(
                   height: 44,
                   child: ElevatedButton(
-                    onPressed: _resetTimer,
+                    onPressed: _savingRecord ? null : _resetTimer,
                     child: const Text('СБРОС'),
                   ),
                 ),
@@ -589,8 +693,14 @@ class _AdminActiveSessionsContentState
                 child: SizedBox(
                   height: 44,
                   child: ElevatedButton(
-                    onPressed: _saveTimer,
-                    child: const Text('СОХРАНИТЬ'),
+                    onPressed: _savingRecord ? null : _saveTimer,
+                    child: _savingRecord
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text('СОХРАНИТЬ'),
                   ),
                 ),
               ),
@@ -658,6 +768,20 @@ class _TimerSnapshot {
       startAtMs: startAtMs is int ? startAtMs : 0,
     );
   }
+}
+
+class _RecordDraft {
+  const _RecordDraft({
+    required this.trackId,
+    required this.lapTimeSeconds,
+    required this.durationHours,
+    required this.participants,
+  });
+
+  final int trackId;
+  final double lapTimeSeconds;
+  final double durationHours;
+  final List<AdminRecordParticipant> participants;
 }
 
 class _SessionsList extends StatelessWidget {
