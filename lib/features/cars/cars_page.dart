@@ -10,6 +10,7 @@ import 'package:cyberdriver/core/network/network.dart';
 import 'package:cyberdriver/core/ui/widgets/cyber_dots_loader.dart';
 import 'package:cyberdriver/core/ui/widgets/kicker.dart';
 import 'package:cyberdriver/core/ui/widgets/radial_fade_image.dart';
+import 'package:cyberdriver/core/ui/widgets/scroll_wheel_passthrough.dart';
 import 'package:cyberdriver/core/utils/logger.dart';
 import 'package:cyberdriver/features/cars/data/cars_api.dart';
 import 'package:cyberdriver/shared/models/car_dto.dart';
@@ -186,12 +187,14 @@ class _BrandPopupField extends StatelessWidget {
         }
         return entries;
       },
-      child: AbsorbPointer(
-        child: TextField(
-          readOnly: true,
-          decoration: decoration.copyWith(
-            hintText: label,
-            suffixIcon: const Icon(Icons.expand_more),
+      child: ScrollWheelPassthrough(
+        child: AbsorbPointer(
+          child: TextField(
+            readOnly: true,
+            decoration: decoration.copyWith(
+              hintText: label,
+              suffixIcon: const Icon(Icons.expand_more),
+            ),
           ),
         ),
       ),

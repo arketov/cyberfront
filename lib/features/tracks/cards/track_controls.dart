@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:cyberdriver/core/ui/cards/card_base.dart';
 import 'package:cyberdriver/core/ui/widgets/kicker.dart';
+import 'package:cyberdriver/core/ui/widgets/scroll_wheel_passthrough.dart';
 import 'package:cyberdriver/shared/countries_ru.dart';
 import 'package:flutter/material.dart';
 
@@ -124,12 +125,14 @@ class _CountryPopupField extends StatelessWidget {
         }
         return items;
       },
-      child: AbsorbPointer(
-        child: TextField(
-          readOnly: true,
-          decoration: decoration.copyWith(
-            hintText: label,
-            suffixIcon: const Icon(Icons.expand_more),
+      child: ScrollWheelPassthrough(
+        child: AbsorbPointer(
+          child: TextField(
+            readOnly: true,
+            decoration: decoration.copyWith(
+              hintText: label,
+              suffixIcon: const Icon(Icons.expand_more),
+            ),
           ),
         ),
       ),
@@ -174,13 +177,15 @@ class _SearchCard extends CardBase {
             children: [
               Text('[', style: bs),
               Expanded(
-                child: TextField(
-                  controller: controller,
-                  onChanged: onChanged,
-                  onSubmitted: onSubmitted,
-                  textInputAction: TextInputAction.search,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
-                  decoration: _controlDecoration(context, hint: hint, icon: Icons.search),
+                child: ScrollWheelPassthrough(
+                  child: TextField(
+                    controller: controller,
+                    onChanged: onChanged,
+                    onSubmitted: onSubmitted,
+                    textInputAction: TextInputAction.search,
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+                    decoration: _controlDecoration(context, hint: hint, icon: Icons.search),
+                  ),
                 ),
               ),
               Text(']', style: bs),

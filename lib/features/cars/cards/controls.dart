@@ -79,13 +79,15 @@ class _SearchCard extends CardBase {
             children: [
               Text('[', style: bs),
               Expanded(
-                child: TextField(
-                  controller: controller,
-                  onChanged: onChanged,
-                  onSubmitted: onSubmitted,
-                  textInputAction: TextInputAction.search,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
-                  decoration: _controlDecoration(context, hint: hint, icon: Icons.search),
+                child: ScrollWheelPassthrough(
+                  child: TextField(
+                    controller: controller,
+                    onChanged: onChanged,
+                    onSubmitted: onSubmitted,
+                    textInputAction: TextInputAction.search,
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+                    decoration: _controlDecoration(context, hint: hint, icon: Icons.search),
+                  ),
                 ),
               ),
               Text(']', style: bs),
@@ -136,17 +138,19 @@ class _BrandCard extends CardBase {
                 child: ValueListenableBuilder<_CarsQuery>(
                   valueListenable: _q,
                   builder: (context, q, _) {
-                    return _BrandPopupField(
-                      value: q.brand,
-                      items: brands,
-                      isLoading: isLoading,
-                      errorMessage: errorMessage,
-                      decoration: _controlDecoration(context, hint: 'Все бренды', icon: Icons.public),
-                      onChanged: (code) {
-                        _q.value = (code == null)
-                            ? _q.value.copyWith(clearBrand: true)
-                            : _q.value.copyWith(brand: code);
-                      },
+                    return ScrollWheelPassthrough(
+                      child: _BrandPopupField(
+                        value: q.brand,
+                        items: brands,
+                        isLoading: isLoading,
+                        errorMessage: errorMessage,
+                        decoration: _controlDecoration(context, hint: 'Все бренды', icon: Icons.public),
+                        onChanged: (code) {
+                          _q.value = (code == null)
+                              ? _q.value.copyWith(clearBrand: true)
+                              : _q.value.copyWith(brand: code);
+                        },
+                      ),
                     );
                   },
                 ),
@@ -199,17 +203,19 @@ class _ClassCard extends CardBase {
                 child: ValueListenableBuilder<_CarsQuery>(
                   valueListenable: _q,
                   builder: (context, q, _) {
-                    return _BrandPopupField(
-                      value: q.carClass,
-                      items: classes,
-                      isLoading: isLoading,
-                      errorMessage: errorMessage,
-                      decoration: _controlDecoration(context, hint: 'Все классы', icon: Icons.layers),
-                      onChanged: (value) {
-                        _q.value = (value == null)
-                            ? _q.value.copyWith(clearClass: true)
-                            : _q.value.copyWith(carClass: value);
-                      },
+                    return ScrollWheelPassthrough(
+                      child: _BrandPopupField(
+                        value: q.carClass,
+                        items: classes,
+                        isLoading: isLoading,
+                        errorMessage: errorMessage,
+                        decoration: _controlDecoration(context, hint: 'Все классы', icon: Icons.layers),
+                        onChanged: (value) {
+                          _q.value = (value == null)
+                              ? _q.value.copyWith(clearClass: true)
+                              : _q.value.copyWith(carClass: value);
+                        },
+                      ),
                     );
                   },
                 ),
